@@ -1,0 +1,42 @@
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+    restart:
+      unless-stopped
+    container_name: system-app
+    command: flask run
+    env_file:
+      - dev/app.env
+    ports:
+      - "${FLASK_RUN_PORT}:${FLASK_RUN_PORT}"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+
+  celery:
+    build:
+      dockerfile: Dockerfile
+    container_name: system-celery
+    command: celery -A ${CELERY_APP} worker --concurrency=${WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
+    env_file:
+      - dev/app.env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - app
+
+  postgres:
+    image: postgres:15
+    container_name: system-postgres
+    env_file:
+      - dev/postgres.env
+
+  redis:
+    image: redis:7
+    container_name: system-redis
+    command: redis-server /data/redis/redis.conf
+    volumes:
+      - ./dev/redis.conf:/data/redis/redis.conf

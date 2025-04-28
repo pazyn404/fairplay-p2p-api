@@ -1,0 +1,15 @@
+from app import db
+from config import VerificationError
+from models import User
+
+
+class VerifyTimestampMixin:
+    def verify_timestamp(self):
+        user = db.session.query(User).first()
+
+        if hasattr(self, "updated_at"):
+            if self.updated_at < user.last_timestamp:
+                raise VerificationError("Invalid timestamp", 409)
+        else:
+            if self.created_at < user.last_timestamp:
+                raise VerificationError("Invalid timestamp", 409)
