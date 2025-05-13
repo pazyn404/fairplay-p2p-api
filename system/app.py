@@ -1,17 +1,21 @@
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from contextlib import asynccontextmanager
 
-from config import AppConfig
+from fastapi import FastAPI
+
+from db import engine, Base
 
 
-app = Flask(__name__)
-app.config.from_object(AppConfig)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-db = SQLAlchemy(app, session_options={"expire_on_commit": False})
+    yield
 
-with app.app_context():
-    from models import *
-    db.create_all()
+    await engine.dispose()
 
+
+app = FastAPI(lifespan=lifespan)
+
+import middlewares
 import views
-import hooks

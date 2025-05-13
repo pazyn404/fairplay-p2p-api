@@ -1,4 +1,5 @@
-from app import db
+from sqlalchemy.orm import Mapped, mapped_column
+
 from mixins import HostActionMixin
 from .base_game_action import BaseGameAction
 
@@ -11,4 +12,4 @@ class OptimalStoppingHostAction(HostActionMixin, BaseGameAction):
     FOR_PLAYER_DATA_ATTRIBUTES = HostActionMixin.FOR_PLAYER_DATA_ATTRIBUTES + ["number"]
     FOR_PLAYER_SIGNATURE_ATTRIBUTES = HostActionMixin.FOR_PLAYER_SIGNATURE_ATTRIBUTES + ["number"]
 
-    number = db.Column(db.Integer, nullable=False)
+    number: Mapped[int] = mapped_column(nullable=False)

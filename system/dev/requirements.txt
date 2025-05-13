@@ -1,9 +1,12 @@
-Flask==3.1.0
-Flask-SQLAlchemy==3.1.1
-celery==5.5.1
+fastapi==0.115.12
+uvicorn==0.34.2
+pydantic==2.11.4
+SQLAlchemy==2.0.40
+asyncpg==0.30.0
 psycopg2-binary==2.9.10
+celery==5.5.1
 redis==5.2.1
-requests==2.32.3
+httpx==0.28.1
 ecdsa==0.19.1
 numpy==2.2.4
 inflect==7.5.0

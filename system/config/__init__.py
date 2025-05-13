@@ -1,4 +1,4 @@
-from .app import AppConfig
+from .db import DBConfig
 from .celery_app import CeleryAppConfig
 from .logger import logger
 from .inflect_engine import inflect_engine

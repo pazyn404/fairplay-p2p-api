@@ -1,12 +1,14 @@
 import re
 import inspect
+from collections.abc import Coroutine
 
-from app import db
+from db import Base
 from config import VerificationError
+from sqlalchemy import select
 from utils import sign
 
 
-class BaseModel(db.Model):
+class BaseModel(Base):
     __abstract__ = True
 
     def __init__(self, **kwargs):
@@ -20,25 +22,31 @@ class BaseModel(db.Model):
 
         super().__init__(**kwargs)
 
+    def __init_subclass__(cls, **kwargs):
+        if not cls.__dict__.get("__abstract__", False):
+            table_name = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__)
+            cls.__tablename__ = table_name.lower()
+
+
     @property
     def curr_data(self):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
     @property
-    def data(self):
-        return self._parse_attrs(self.__class__.DATA_ATTRIBUTES)
+    async def data(self):
+        return await self._parse_attrs(self.__class__.DATA_ATTRIBUTES)
 
     @property
-    def user_signature_data(self):
-        return self._parse_attrs(self.__class__.USER_SIGNATURE_ATTRIBUTES)
+    async def user_signature_data(self):
+        return await self._parse_attrs(self.__class__.USER_SIGNATURE_ATTRIBUTES)
 
     @property
-    def system_signature_data(self):
-        return self._parse_attrs(self.__class__.SYSTEM_SIGNATURE_ATTRIBUTES)
+    async def system_signature_data(self):
+        return await self._parse_attrs(self.__class__.SYSTEM_SIGNATURE_ATTRIBUTES)
 
     @property
-    def system_signature(self):
-        data = self.system_signature_data
+    async def system_signature(self):
+        data = await self.system_signature_data
         signature = sign(data)
 
         return signature
@@ -47,7 +55,7 @@ class BaseModel(db.Model):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
 
-    def verify(self, prev_data=None):
+    async def verify(self, prev_data=None):
         prev_data = prev_data or {}
         prev_data = {f"prev_{param}": val for param, val in prev_data.items()}
         response_status_code = None
@@ -57,7 +65,7 @@ class BaseModel(db.Model):
                 try:
                     params = list(inspect.signature(f).parameters)[1:]
                     selected_prev_data = {param: prev_data.get(param) for param in params}
-                    f(self, **selected_prev_data)
+                    await f(self, **selected_prev_data)
                 except VerificationError as e:
                     response_status_code = e.status_code if not response_status_code else min(response_status_code, e.status_code)
                     errors_by_status_code[e.status_code] = errors_by_status_code.get(e.status_code, set())
@@ -70,17 +78,17 @@ class BaseModel(db.Model):
 
         return errors, response_status_code
 
-    def update_related(self, prev_data=None):
+    async def update_related(self, prev_data=None):
         prev_data = prev_data or {}
         prev_data = {f"prev_{param}": val for param, val in prev_data.items()}
         for name, f in inspect.getmembers(self.__class__, predicate=inspect.isfunction):
             if name.startswith("update_related_"):
                 params = list(inspect.signature(f).parameters)[1:]
                 selected_prev_data = {param: prev_data.get(param) for param in params}
-                f(self, **selected_prev_data)
+                await f(self, **selected_prev_data)
 
-    def _parse_attrs(self, attrs):
-        def parse_attr(obj, attr):
+    async def _parse_attrs(self, attrs):
+        async def parse_attr(obj, attr):
             """
             used to parse relations for example:
             1) User:user_id.action_number
@@ -95,7 +103,11 @@ class BaseModel(db.Model):
             import models
 
             if "." not in attr:
-                return getattr(obj, attr)
+                res = getattr(obj, attr)
+                if isinstance(res, Coroutine):
+                    return await res
+
+                return res
 
             relation, attr = attr.split(".", maxsplit=1)
 
@@ -105,7 +117,7 @@ class BaseModel(db.Model):
                 relation = re.sub(r"\{([^}]*)\}", model.__name__, relation)
 
             if ":" not in relation:
-                return parse_attr(getattr(models, relation), attr)
+                return await parse_attr(getattr(models, relation), attr)
 
             as_list = False
             if relation.startswith("[]"):
@@ -114,18 +126,24 @@ class BaseModel(db.Model):
 
             if as_list:
                 model_name, model_attr, obj_attr = relation.split(":")
-                instances = db.session.query(getattr(models, model_name)).filter_by(
+                query = select(getattr(models, model_name)).filter_by(
                     **{model_attr: getattr(obj, obj_attr)}
-                ).all()
+                )
+                res = await self.session.execute(query)
+                instances = res.scalars().all()
+                for instance in instances:
+                    instance.session = self.session
 
-                return [parse_attr(instance, attr) for instance in instances]
+                return [await parse_attr(instance, attr) for instance in instances]
             else:
                 model_name, obj_attr = relation.split(":")
-                instance = db.session.get(getattr(models, model_name), getattr(obj, obj_attr))
+                instance = await self.session.get(getattr(models, model_name), getattr(obj, obj_attr))
                 if not instance:
                     return None
 
-                return parse_attr(instance, attr)
+                instance.session = self.session
+
+                return await parse_attr(instance, attr)
 
         data = {}
         for attr in attrs:
@@ -134,8 +152,8 @@ class BaseModel(db.Model):
                 data[name] = val
             elif "|" in attr:
                 name, attr = attr.split("|")
-                data[name] = parse_attr(self, attr)
+                data[name] = await parse_attr(self, attr)
             else:
-                data[attr] = parse_attr(self, attr)
+                data[attr] = await parse_attr(self, attr)
 
         return data
