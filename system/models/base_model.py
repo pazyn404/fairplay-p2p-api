@@ -27,7 +27,6 @@ class BaseModel(Base):
             table_name = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__)
             cls.__tablename__ = table_name.lower()
 
-
     @property
     def curr_data(self):
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
