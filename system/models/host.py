@@ -28,7 +28,9 @@ class Host(VerifySignatureMixin, BaseModel):
 
         for game_model in BaseGame.__subclasses__():
             query = select(game_model).filter(
-                game_model.user_id == self.user_id, game_model.active == True, game_model.winner_id.is_(None)
+                game_model.user_id == self.user_id,
+                game_model.active == True,
+                game_model.winner_id.is_(None)
             )
             res = await self.session.execute(query)
             active_games = res.scalars().all()
