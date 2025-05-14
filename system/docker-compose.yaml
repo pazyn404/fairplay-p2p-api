@@ -5,11 +5,11 @@ services:
     restart:
       unless-stopped
     container_name: system-app
-    command: flask run
+    command: uvicorn app:app --host 0.0.0.0 --reload
     env_file:
       - dev/app.env
     ports:
-      - "${FLASK_RUN_PORT}:${FLASK_RUN_PORT}"
+      - "${FASTAPI_RUN_PORT}:${FASTAPI_RUN_PORT}"
     volumes:
       - .:/app
     depends_on:
@@ -19,7 +19,7 @@ services:
     build:
       dockerfile: Dockerfile
     container_name: system-celery
-    command: celery -A ${CELERY_APP} worker --concurrency=${WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
+    command: celery -A celery_app worker --concurrency=${WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
     env_file:
       - dev/app.env
     volumes:

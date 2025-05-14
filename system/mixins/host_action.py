@@ -12,16 +12,16 @@ class HostActionMixin:
     ]
 
     @property
-    def for_player_data(self):
-        return self._parse_attrs(self.__class__.FOR_PLAYER_DATA_ATTRIBUTES)
+    async def for_player_data(self):
+        return await self._parse_attrs(self.__class__.FOR_PLAYER_DATA_ATTRIBUTES)
 
     @property
-    def for_player_signature_data(self):
-        return self._parse_attrs(self.__class__.FOR_PLAYER_SIGNATURE_ATTRIBUTES)
+    async def for_player_signature_data(self):
+        return await self._parse_attrs(self.__class__.FOR_PLAYER_SIGNATURE_ATTRIBUTES)
 
     @property
-    def for_player_signature(self):
-        data = self.for_player_signature_data
+    async def for_player_signature(self):
+        data = await self.for_player_signature_data
         signature = sign(data)
 
         return signature

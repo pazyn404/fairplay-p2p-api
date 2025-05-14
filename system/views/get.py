@@ -1,4 +1,8 @@
-from app import app, db
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app import app
+from db import get_session
 from config import inflect_engine
 from models import User, Host, game_models
 from decorators import format_response
@@ -12,17 +16,18 @@ models = {
 }
 
 
-@app.route("/<plural_model_name>/<instance_id>", methods=["GET"])
+@app.api_route("/{plural_model_name}/{instance_id}", methods=["GET"])
 @format_response
-def get(plural_model_name, instance_id):
+async def get(plural_model_name: str, instance_id: int, session: AsyncSession = Depends(get_session)):
     model_name = inflect_engine.singular_noun(plural_model_name)
     model = models.get(model_name)
     if not model:
         return format_errors(["Model does not exist"], 400)
 
-    instance = db.session.get(model, instance_id)
-
+    instance = await session.get(model, instance_id)
     if not instance:
         return format_errors(["Instance not found"], 404)
 
-    return instance.data, 200
+    instance.session = session
+
+    return await instance.data, 200
