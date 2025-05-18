@@ -39,25 +39,20 @@ async def update(plural_model_name: str, request: Request, session: AsyncSession
     if not instance:
         return format_errors(["Instance not found"], 404)
 
-    instance.session = session
-
     query = select(User).with_for_update().filter_by(id=instance.user_id)
     res = await session.execute(query)
     user = res.scalars().first()
-    user.action_number += 1
 
-    instance.action_number = user.action_number
-    instance.updated_at = int(time())
+    await instance.fetch_related(session)
 
-    prev_data = instance.curr_data
-    instance.update(**formatted_payload)
-    errors, status_code = await instance.verify(prev_data)
+    prev_data = instance.__dict__.copy()
+    instance.update(**formatted_payload, action_number=user.action_number + 1, updated_at=int(time()))
+    instance.update_related(prev_data)
+    errors, status_code = instance.verify(prev_data)
     if errors:
         await session.rollback()
         return format_errors(errors, status_code)
 
-    await instance.update_related(prev_data)
-
     await session.commit()
 
-    return await instance.data, 200
+    return instance.data, 200

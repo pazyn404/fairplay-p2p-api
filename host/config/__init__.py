@@ -1,4 +1,5 @@
 from .app import AppConfig
+from .celery_app import CeleryAppConfig
 from .logger import logger
 from .inflect_engine import inflect_engine
 from .system_endpoint import SYSTEM_ENDPOINT

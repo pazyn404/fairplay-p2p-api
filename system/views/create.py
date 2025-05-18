@@ -36,7 +36,6 @@ async def create(plural_model_name: str, request: Request, session: AsyncSession
 
     _time = int(time())
     instance = model(created_at=_time, **formatted_payload)
-    instance.session = session
     if model is not User:
         query = select(User).with_for_update().filter_by(id=formatted_payload["user_id"])
         res = await session.execute(query)
@@ -44,19 +43,24 @@ async def create(plural_model_name: str, request: Request, session: AsyncSession
         if not user:
             return format_errors(["User not found"], 404)
 
-        user.action_number += 1
-
-        instance.action_number = user.action_number
+        instance.action_number = user.action_number + 1
         instance.updated_at = _time
 
-    errors, status_code = await instance.verify()
+    session.add(instance)
+    await session.flush()
+
+    await instance.fetch_related(session)
+
+    instance_id = instance.id
+    instance.id = None
+
+    instance.update_related()
+    errors, status_code = instance.verify()
     if errors:
         await session.rollback()
         return format_errors(errors, status_code)
 
-    await instance.update_related()
-
-    session.add(instance)
+    instance.id = instance_id
     await session.commit()
 
-    return await instance.data, 201
+    return instance.data, 201

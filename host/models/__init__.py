@@ -9,12 +9,6 @@ game_models = {
     "optimal_stopping_game": OptimalStoppingGame
 }
 
-game_action_models = {
+game_system_action_models = {
     "optimal_stopping_game": OptimalStoppingSystemAction
 }
-
-for game_model_name, game_model in game_models.items():
-    game_system_action = game_action_models[game_model_name]
-
-    game_system_action.GAME_MODEL = game_model
-    game_model.SYSTEM_ACTION_MODEL = game_system_action

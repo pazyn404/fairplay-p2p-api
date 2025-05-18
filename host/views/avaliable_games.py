@@ -1,3 +1,5 @@
+from sqlalchemy.orm import selectinload
+
 from app import app, db
 from config import inflect_engine
 from models import Host, game_models
@@ -15,5 +17,5 @@ def available_games(plural_game_model_name):
 
     games = db.session.query(game_model).join(Host, game_model.user_id == Host.user_id).filter(
         game_model.active == True, game_model.pending == False, game_model.complete == False
-    ).all()
-    return {"games": [game.part_data for game in games]}, 200
+    ).options(selectinload(game_model.system_actions)).all()
+    return {"games": [game.data for game in games]}, 200

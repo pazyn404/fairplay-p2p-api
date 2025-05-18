@@ -5,6 +5,7 @@ services:
     restart:
       unless-stopped
     container_name: host-app
+    command: flask run
     env_file:
       - dev/app.env
     ports:
@@ -14,8 +15,28 @@ services:
     depends_on:
       - postgres
 
+  celery:
+    build:
+      dockerfile: Dockerfile
+    container_name: host-celery
+    command: celery -A celery_app worker --concurrency=${WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
+    env_file:
+      - dev/app.env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - app
+
   postgres:
     image: postgres:15
     container_name: host-postgres
     env_file:
       - dev/postgres.env
+
+  redis:
+    image: redis:7
+    container_name: host-redis
+    command: redis-server /data/redis/redis.conf
+    volumes:
+      - ./dev/redis.conf:/data/redis/redis.conf

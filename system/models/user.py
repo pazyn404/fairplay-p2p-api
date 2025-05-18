@@ -11,9 +11,9 @@ class User(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     public_key: Mapped[bytes] = mapped_column(nullable=False)
-    action_number: Mapped[int] = mapped_column(nullable=False, default=0)
+    action_number: Mapped[int] = mapped_column(nullable=False, default=1)
     balance: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[int] = mapped_column(nullable=False)
 
-    async def verify_public_key(self):
+    def verify_public_key(self):
         VerifyingKey(self.public_key)

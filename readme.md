@@ -12,7 +12,7 @@ blockchain as message broker can be used since it's publicly available it also i
 since you just need to send message and crawl blockchain for the response.
 Possible blockchain for this purpose is Constellation(DAG) 
 as far as I understand it allows fast transactions, support messages and has
-DAG structure that allows to crawl messages much easier and faster(not 100%).
+DAG structure that allows to crawl messages much easier and faster(should be tested in practice).
 
 # How to run
 
@@ -61,7 +61,6 @@ docker compose --env-file ./dev/.env up
 # How to format payload
 
 * To format payload tools/payload_formatter.py should be used like:
-* python payload_formatter.py who(user, player) id current_action_number
-* python payload_formatter.py user 1 2
-
-*User means Host user.
+* python payload_formatter.py who(host_user, player) id current_action_number
+* python payload_formatter.py host_user 1 2
+* python payload_formatter.py player 2 0

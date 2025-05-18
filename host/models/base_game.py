@@ -7,14 +7,13 @@ from .base_model import BaseModel
 
 
 class BaseGame(VerifyTimestampMixin, BaseModel):
-    __abstract__ = True
+    __mapper_args__ = {
+        "polymorphic_on": "type"
+    }
 
-    PART_DATA_ATTRIBUTES = [
-        "id", "user_id", "action_number", "bet", "duration", "active", "seed", "created_at", "updated_at", "system_signature"
-    ]
     DATA_ATTRIBUTES = [
-        "id", "user_id", "action_number", "actions_count", "bet", "duration", "active", "seed", "created_at", "updated_at",
-        "pending", "complete", "system_actions|[]{SYSTEM_ACTION_MODEL}:game_id:id.data", "system_signature"
+        "id", "user_id", "action_number", "actions_count", "bet", "duration", "active", "seed", "created_at",
+        "updated_at", "pending", "complete", "system_actions|system_actions.data", "system_signature"
     ]
     SYSTEM_SIGNATURE_ATTRIBUTES = [
         "id", "user_id", ("player_id", None), ("winner_id", None), "action_number", "actions_count", "game_name|GAME_NAME", "bet",
@@ -22,9 +21,12 @@ class BaseGame(VerifyTimestampMixin, BaseModel):
     ]
 
     REVEALED_DATA_ATTRIBUTES = ["seed", "user_signature|revealed_signature"]
-    REVEALED_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "game_name|GAME_NAME", "bet", "duration", "active", "seed_hash", "seed"]
+    REVEALED_SIGNATURE_ATTRIBUTES = [
+        "id", "user_id", "action_number", "game_name|__class__.GAME_NAME", "bet", "duration", "active", "seed_hash", "seed"
+    ]
 
     id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(128))
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     action_number = db.Column(db.Integer, nullable=False)
     actions_count = db.Column(db.Integer, nullable=False, default=0)
@@ -39,9 +41,8 @@ class BaseGame(VerifyTimestampMixin, BaseModel):
     complete = db.Column(db.Boolean, nullable=False, default=False)
     system_signature = db.Column(db.LargeBinary, nullable=False)
 
-    @property
-    def part_data(self):
-        return self._parse_attrs(self.__class__.PART_DATA_ATTRIBUTES)
+    user = db.relationship("User", uselist=False)
+    system_actions = db.relationship("BaseGameSystemAction", viewonly=True, uselist=True)
 
     @property
     def seed_hash(self):

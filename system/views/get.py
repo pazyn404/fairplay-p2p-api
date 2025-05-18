@@ -28,6 +28,6 @@ async def get(plural_model_name: str, instance_id: int, session: AsyncSession = 
     if not instance:
         return format_errors(["Instance not found"], 404)
 
-    instance.session = session
+    await instance.fetch_related(session)
 
-    return await instance.data, 200
+    return instance.data, 200

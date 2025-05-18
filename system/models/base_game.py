@@ -2,31 +2,33 @@ from abc import abstractmethod
 from hashlib import sha256
 
 from sqlalchemy import ForeignKey, select
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship, selectinload, joinedload
 
 from config import VerificationError
-from mixins import VerifySignatureMixin
+from mixins import VerifySignatureMixin, UpdateRelatedUserActionNumberMixin
 from .base_model import BaseModel
 
 
-class BaseGame(VerifySignatureMixin, BaseModel):
-    __abstract__ = True
+class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
+    __mapper_args__ = {
+        "polymorphic_on": "type"
+    }
 
-    PART_DATA_ATTRIBUTES = [
-        "id", "user_id", "action_number", "bet", "duration", "seed_hash", "created_at", "updated_at","system_signature"
-    ]
     DATA_ATTRIBUTES = [
-        "id", "user_id", "player_id", "winner_id", "action_number", "actions_count", "game_name|GAME_NAME", "bet", "duration",
+        "id", "user_id", "player_id", "winner_id", "action_number", "game_name|GAME_NAME", "bet", "duration",
         "active", "seed_hash", "seed", "started_at", "finished_at", "created_at", "updated_at",
-        "player_actions|[]{PLAYER_ACTION_MODEL}:game_id:id.data", "host_actions|[]{HOST_ACTION_MODEL}:game_id:id.data", "system_signature"
+        "player_actions|player_actions.data", "host_actions|host_actions.data", "system_signature"
     ]
     SYSTEM_SIGNATURE_ATTRIBUTES = [
-        "id", "user_id", "player_id", "winner_id", "action_number", "actions_count", "game_name|GAME_NAME", "bet", "duration",
-        "active", "seed_hash", "seed", "started_at", "finished_at", "created_at", "updated_at"
+        "id", "user_id", "player_id", "winner_id", "action_number", "actions_count", "game_name|GAME_NAME", "bet",
+        "duration", "active", "seed_hash", "seed", "started_at", "finished_at", "created_at", "updated_at"
     ]
-    USER_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "game_name|GAME_NAME", "bet", "duration", "active", "seed_hash", "seed"]
+    USER_SIGNATURE_ATTRIBUTES = [
+        "id", "user_id", "action_number", "game_name|GAME_NAME", "bet", "duration", "active", "seed_hash", "seed"
+    ]
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    type: Mapped[str]
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True, index=True)
     winner_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True, index=True)
@@ -44,75 +46,83 @@ class BaseGame(VerifySignatureMixin, BaseModel):
     user_signature: Mapped[bytes] = mapped_column(nullable=False)
     paid_out: Mapped[bool] = mapped_column(nullable=False, default=False)
 
+    user = relationship(
+        "User",
+        primaryjoin="User.id == foreign(BaseGame.user_id)",
+        uselist=False
+    )
+    host = relationship(
+        "Host",
+        primaryjoin="Host.user_id == foreign(BaseGame.user_id)",
+        viewonly=True,
+        uselist=False
+    )
+
+    player_actions = relationship(
+        "BaseGamePlayerAction",
+        order_by="BaseGamePlayerAction.game_action_number",
+        viewonly=True,
+        uselist=True
+    )
+    host_actions = relationship(
+        "BaseGameHostAction",
+        order_by="BaseGameHostAction.game_action_number",
+        viewonly=True,
+        uselist=True
+    )
+
     @abstractmethod
-    async def player_win(self):
+    def player_win(self):
         raise NotImplementedError
 
-    @property
-    async def part_data(self):
-        return await self._parse_attrs(self.__class__.PART_DATA_ATTRIBUTES)
+    def _options(self):
+        return [
+            joinedload(self.__class__.user),
+            joinedload(self.__class__.host),
+            selectinload(self.__class__.player_actions),
+            selectinload(self.__class__.host_actions)
+        ]
 
-    async def complete(self):
-        if await self.player_win():
+    def complete(self):
+        if self.player_win():
             self.winner_id = self.player_id
         else:
             self.winner_id = self.user_id
 
-    async def verify_seed_hash(self):
+    def verify_seed_hash(self):
         if self.seed is None:
             return
 
         if sha256(self.seed).digest() != self.seed_hash:
             raise VerificationError("Seed hash does not match", 409)
 
-    async def verify_host_exist(self):
-        from .host import Host
-
-        query = select(Host).filter_by(user_id=self.user_id)
-        res = await self.session.execute(query)
-        host = res.scalars().first()
-        if not host:
+    def verify_host_exist(self):
+        if not self.host:
             raise VerificationError("Host is not set up", 409)
 
-    async def verify_host_active(self):
-        from .host import Host
-
-        query = select(Host).filter_by(user_id=self.user_id)
-        res = await self.session.execute(query)
-        host = res.scalars().first()
-        if not host:
+    def verify_host_active(self):
+        if not self.host:
             return
 
-        if not host.active and self.active:
+        if not self.host.active and self.active:
             raise VerificationError("Host is not active", 409)
 
-    async def verify_pending(self):
+    def verify_pending(self):
         if self.winner_id is not None:
             raise VerificationError("Game is already complete", 409)
         if self.player_id is not None:
             raise VerificationError("Game has been started", 409)
 
-    async def verify_user_balance(self, prev_bet, prev_active):
-        from .user import User
+    def verify_user_balance(self):
+        if self.user.balance < 0:
+            raise VerificationError("Insufficient balance", 409)
 
-        user = await self.session.get(User, self.user_id)
+    def update_related_user_balance(self, prev_bet, prev_active):
         if self.active:
             if prev_active:
-                if user.balance < self.bet - prev_bet:
-                    raise VerificationError("Insufficient balance", 409)
+                self.user.balance -= self.bet - prev_bet
             else:
-                if user.balance < self.bet:
-                    raise VerificationError("Insufficient balance", 409)
-
-    async def update_related_user_balance(self, prev_bet, prev_active):
-        from .user import User
-
-        user = await self.session.get(User, self.user_id)
-        if self.active:
-            if prev_active:
-                user.balance -= self.bet - prev_bet
-            else:
-                user.balance -= self.bet
+                self.user.balance -= self.bet
         else:
             if prev_active:
-                user.balance += prev_bet
+                self.user.balance += prev_bet

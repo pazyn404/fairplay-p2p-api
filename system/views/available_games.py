@@ -1,5 +1,6 @@
 from fastapi import Depends
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import app
@@ -20,8 +21,8 @@ async def available_games(plural_game_model_name: str, session: AsyncSession = D
 
     query = select(game_model).join(Host, game_model.user_id == Host.user_id).filter(
         game_model.active == True, game_model.player_id.is_(None)
-    )
+    ).options(selectinload(game_model.host_actions), selectinload(game_model.player_actions))
     res = await session.execute(query)
     games = res.scalars().all()
 
-    return {"games": [await game.part_data for game in games]}, 200
+    return {"games": [game.data for game in games]}, 200
