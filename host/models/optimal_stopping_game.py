@@ -3,9 +3,13 @@ from .base_game import BaseGame
 
 
 class OptimalStoppingGame(BaseGame):
+    __mapper_args__ = {
+        "polymorphic_identity": "optimal_stopping_game",
+        "polymorphic_load": "selectin"
+    }
+
     GAME_NAME = "optimal stopping"
 
-    PART_DATA_ATTRIBUTES = BaseGame.PART_DATA_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
     DATA_ATTRIBUTES = BaseGame.DATA_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
     SYSTEM_SIGNATURE_ATTRIBUTES = BaseGame.SYSTEM_SIGNATURE_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
 

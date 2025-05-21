@@ -34,7 +34,7 @@ action_number = int(sys.argv[3])
 if who == "player":
     private_key_path = "../player/keys/player_private_key.der"
 else:
-    private_key_path = "../host/keys/user_private_key.der"
+    private_key_path = "../host/keys/host_user_private_key.der"
 
 with open(private_key_path, "rb") as f:
     private_key = f.read()

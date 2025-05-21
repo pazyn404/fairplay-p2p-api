@@ -31,6 +31,7 @@ def create(plural_model_name):
     user_structure = user_create_structures[model_name]
     formatted_user_payload, errors = format_payload(user_payload, user_structure, strict=False)
     if errors:
+        db.session.rollback()
         return format_errors(errors, 400)
 
     if issubclass(model, BaseGame):
@@ -44,28 +45,36 @@ def create(plural_model_name):
         endpoint = SYSTEM_ENDPOINT.format(path=plural_model_name)
         system_request = requests.post(endpoint, json=user_payload)
     except requests.exceptions.ConnectionError as e:
+        db.session.rollback()
         return format_system_errors([str(e)], 400, user_payload=user_payload)
 
     try:
         system_payload = system_request.json()
     except requests.exceptions.JSONDecodeError as e:
+        db.session.rollback()
         return format_system_errors([str(e)], 415, user_payload=user_payload)
 
     if "errors" in system_payload:
+        db.session.rollback()
         return format_errors(system_payload["errors"], system_request.status_code)
 
     formatted_system_payload, errors = format_payload(system_payload, system_create_general_structure, strict=False)
     if errors:
+        db.session.rollback()
         return format_system_errors(errors, 400, user_payload=user_payload, system_payload=system_payload)
 
     instance = model(**formatted_user_payload, **formatted_system_payload, action_number=user.action_number)
+
+    db.session.add(instance)
+    db.session.flush()
+
     errors, status_code = instance.verify()
     if errors:
+        db.session.rollback()
         return format_system_errors(errors, status_code, user_payload=user_payload, system_payload=system_payload)
 
     user.last_timestamp = instance.created_at
 
-    db.session.add(instance)
     db.session.commit()
 
     return {}, 201

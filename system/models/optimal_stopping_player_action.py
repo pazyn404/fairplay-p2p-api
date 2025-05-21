@@ -1,36 +1,40 @@
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from config import VerificationError
-from mixins import PlayerActionMixin
-from .base_game_action import BaseGameAction
+from .base_game_player_action import BaseGamePlayerAction
 
 
-class OptimalStoppingPlayerAction(PlayerActionMixin, BaseGameAction):
-    DATA_ATTRIBUTES = BaseGameAction.DATA_ATTRIBUTES + ["action"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = BaseGameAction.SYSTEM_SIGNATURE_ATTRIBUTES + ["action"]
-    USER_SIGNATURE_ATTRIBUTES = BaseGameAction.USER_SIGNATURE_ATTRIBUTES + ["action"]
+class OptimalStoppingPlayerAction(BaseGamePlayerAction):
+    __mapper_args__ = {
+        "polymorphic_identity": "optimal_stopping_player_action",
+        "polymorphic_load": "selectin"
+    }
 
-    FOR_HOST_DATA_ATTRIBUTES = PlayerActionMixin.FOR_HOST_DATA_ATTRIBUTES + ["action"]
-    FOR_HOST_SIGNATURE_ATTRIBUTES = PlayerActionMixin.FOR_HOST_SIGNATURE_ATTRIBUTES + ["action"]
+    DATA_ATTRIBUTES = BaseGamePlayerAction.DATA_ATTRIBUTES + ["action"]
+    SYSTEM_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.SYSTEM_SIGNATURE_ATTRIBUTES + ["action"]
+    USER_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.USER_SIGNATURE_ATTRIBUTES + ["action"]
 
+    FOR_HOST_DATA_ATTRIBUTES = BaseGamePlayerAction.FOR_HOST_DATA_ATTRIBUTES + ["action"]
+    FOR_HOST_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.FOR_HOST_SIGNATURE_ATTRIBUTES + ["action"]
+
+    id: Mapped[int] = mapped_column(ForeignKey("base_game_player_action.id"), primary_key=True)
     action: Mapped[str] = mapped_column(nullable=False)
 
-    async def is_last_action(self):
+    def is_last_action(self):
         return self.action == "stop"
 
-    async def verify_next_allowed(self):
+    def verify_next_allowed(self):
         if self.action != "next":
             return
 
-        game = await self.session.get(self.__class__.GAME_MODEL, self.game_id)
-        if game.numbers_count < game.actions_count:
-            raise VerificationError("You have already reached the last number", 409)
+        if self.game.numbers_count < self.game_action_number:
+            raise VerificationError("The last number has already been reached", 409)
 
-    async def verify_action_allowed(self):
+    def verify_action_allowed(self):
         if self.action not in ("next", "stop"):
             raise VerificationError("Invalid action", 409)
 
-    async def verify_first_action(self):
-        game = await self.session.get(self.__class__.GAME_MODEL, self.game_id)
-        if game.player_id is None and self.action == "stop":
+    def verify_first_action(self):
+        if self.game.player_id is None and self.action == "stop":
             raise VerificationError("Invalid first action", 409)

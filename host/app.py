@@ -69,13 +69,16 @@ def init_host():
         data.pop("user_signature")
 
         host = Host(**data, **formatted_payload, action_number=user.action_number)
+
+        db.session.add(host)
+        db.session.flush()
+
         errors, status_code = host.verify()
         if errors:
             raise Exception(errors, status_code)
 
         user.last_timestamp = host.created_at
 
-        db.session.add(host)
         db.session.commit()
 
     if host.domain != os.environ["HOST_DOMAIN"]:

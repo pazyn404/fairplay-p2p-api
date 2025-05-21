@@ -15,3 +15,5 @@ class Host(VerifyTimestampMixin, BaseModel):
     created_at = db.Column(db.Integer, nullable=False)
     updated_at = db.Column(db.Integer, nullable=False)
     system_signature = db.Column(db.LargeBinary, nullable=False)
+
+    user = db.relationship("User", uselist=False)

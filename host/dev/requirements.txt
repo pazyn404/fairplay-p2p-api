@@ -1,6 +1,8 @@
 Flask==3.1.0
 Flask-SQLAlchemy==3.1.1
 psycopg2-binary==2.9.10
+celery==5.5.1
+redis==5.2.1
 requests==2.32.3
 ecdsa==0.19.1
 numpy==2.2.4

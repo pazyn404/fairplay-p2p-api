@@ -1,7 +1,7 @@
 from flask import request
 
 from app import app, db
-from models import game_models, game_action_models, User
+from models import BaseGame, game_system_action_models, User
 from decorators import format_response
 from formatters import format_system_errors, format_payload
 from payload_structures import system_game_action_structures
@@ -10,10 +10,11 @@ from payload_structures import system_game_action_structures
 @app.route("/play/<game_model_name>", methods=["POST"])
 @format_response
 def play(game_model_name):
+    from tasks.complete_game_on_timeout import complete_game_on_timeout
+
     system_payload = request.json
 
-    game_model = game_models.get(game_model_name)
-    if not game_model:
+    if game_model_name not in system_game_action_structures:
         return format_system_errors(["Game model does not exist"], 400, system_payload=system_payload)
 
     structure = system_game_action_structures[game_model_name]
@@ -21,25 +22,30 @@ def play(game_model_name):
     if errors:
         return format_system_errors(errors, 400, system_payload=system_payload)
 
-    game = db.session.get(game_model, formatted_system_payload["game_id"])
-    game.actions_count += 1
-
     user = db.session.query(User).first()
+    game = db.session.get(BaseGame, formatted_system_payload["game_id"])
 
-    game_system_action_model = game_action_models[game_model_name]
+    game_system_action_model = game_system_action_models[game_model_name]
     system_action = game_system_action_model(
         **formatted_system_payload,
         user_id=user.id,
-        action_number=user.action_number
+        action_number=user.action_number,
+        game_action_number=game.actions_count + 1
     )
-    errors, status_code = system_action.verify()
-    if errors:
-        return format_system_errors(errors, 400, system_payload=system_payload)
-
-    system_action.update_related()
 
     db.session.add(system_action)
+    db.session.flush()
+
+    system_action.update_related()
+    errors, status_code = system_action.verify()
+    if errors:
+        db.session.rollback()
+        return format_system_errors(errors, 400, system_payload=system_payload)
+
     db.session.commit()
+
+    if system_action.is_first_action():
+        complete_game_on_timeout.apply_async(args=[game.id], countdown=game.duration)
 
     if system_action.is_last_action():
         return game.revealed_data, 200

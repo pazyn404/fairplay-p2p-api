@@ -34,7 +34,7 @@ def update(plural_model_name):
     if errors:
         return format_errors(errors, 400)
 
-    if "seed" in user_payload:
+    if "seed" in formatted_user_payload:
         seed = formatted_user_payload["seed"]
         seed_hash = sha256(seed).digest()
 
@@ -63,9 +63,9 @@ def update(plural_model_name):
     if not instance:
         return format_system_errors(["Instance not found"], 404, user_payload=user_payload, system_payload=system_payload)
 
-    curr_data = instance.curr_data
+    prev_data = instance.__dict__.copy()
     instance.update(**formatted_user_payload, **formatted_system_payload, action_number=user.action_number)
-    errors, status_code = instance.verify(curr_data)
+    errors, status_code = instance.verify(prev_data)
     if errors:
         return format_system_errors(errors, status_code, user_payload=user_payload, system_payload=system_payload)
 
