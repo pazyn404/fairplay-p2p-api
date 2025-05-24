@@ -78,10 +78,7 @@ class BaseGamePlayerAction(UpdateRelatedUserActionNumberMixin, BaseGameAction):
         ]
 
     def verify_player_balance(self):
-        if self.game.player_id is not None:
-            return
-
-        if self.user.balance < self.game.bet:
+        if self.user.balance < 0:
             raise VerificationError("Insufficient balance", 409)
 
     def verify_player_host_unset(self):
