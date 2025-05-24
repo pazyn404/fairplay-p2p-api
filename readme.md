@@ -27,6 +27,7 @@ python -m venv venv
 python -m pip install -r requirements.txt
 cd tools
 python init.py
+cd ..
 ```
 * Run system
 ```
@@ -46,6 +47,7 @@ source venv/bin/activate
 python3 -m pip install -r requirements.txt
 cd tools
 python3 init.py
+cd ..
 ```
 * Run system
 ```
@@ -61,6 +63,6 @@ docker compose --env-file ./dev/.env up
 # How to format payload
 
 * To format payload tools/payload_formatter.py should be used like:
-* python payload_formatter.py who(host_user, player) id current_action_number
+* python payload_formatter.py who(host_user, player) id next_action_number
 * python payload_formatter.py host_user 1 2
 * python payload_formatter.py player 2 0

@@ -10,6 +10,7 @@ from .base_game_action import BaseGameAction
 
 class BaseGamePlayerAction(UpdateRelatedUserActionNumberMixin, BaseGameAction):
     __mapper_args__ = {
+        "polymorphic_abstract": True,
         "polymorphic_on": "type"
     }
 
