@@ -8,6 +8,7 @@ from .base_model import BaseModel
 
 class BaseGame(VerifyTimestampMixin, BaseModel):
     __mapper_args__ = {
+        "polymorphic_abstract": True,
         "polymorphic_on": "type"
     }
 
