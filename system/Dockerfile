@@ -5,4 +5,4 @@ WORKDIR /app
 COPY dev/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 5000
+EXPOSE $FASTAPI_RUN_PORT
