@@ -36,5 +36,5 @@ class OptimalStoppingPlayerAction(BaseGamePlayerAction):
             raise VerificationError("Invalid action", 409)
 
     def verify_first_action(self):
-        if self.game.player_id is None and self.action == "stop":
+        if self.game_action_number == 1 and self.action == "stop":
             raise VerificationError("Invalid first action", 409)
