@@ -4,7 +4,7 @@ from hashlib import sha256
 from sqlalchemy import ForeignKey, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship, selectinload, joinedload
 
-from config import VerificationError
+from config import VerificationError, ViolatedConstraintError
 from mixins import VerifySignatureMixin, UpdateRelatedUserActionNumberMixin
 from .base_model import BaseModel
 
@@ -38,7 +38,7 @@ class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseMod
     bet: Mapped[int] = mapped_column(nullable=False)
     duration: Mapped[int] = mapped_column(nullable=False)
     active: Mapped[bool] = mapped_column(nullable=False)
-    seed_hash: Mapped[bytes] = mapped_column(nullable=False)
+    seed_hash: Mapped[bytes] = mapped_column(nullable=False, unique=True, index=True)
     seed: Mapped[bytes] = mapped_column(nullable=True)
     created_at: Mapped[int] = mapped_column(nullable=False)
     updated_at: Mapped[int] = mapped_column(nullable=False)
@@ -89,6 +89,13 @@ class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseMod
             self.winner_id = self.player_id
         else:
             self.winner_id = self.user_id
+
+    async def violated_constraint_unique_seed_hash(self, session):
+        query = select(BaseGame).filter(BaseGame.seed_hash == self.seed_hash, BaseGame.id != self.id)
+        res = await session.execute(query)
+        existence_game = res.scalars().first()
+        if existence_game:
+            raise ViolatedConstraintError("Insecure seed")
 
     def verify_seed_hash(self):
         if self.seed is None:

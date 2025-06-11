@@ -1,7 +1,7 @@
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, select
 from sqlalchemy.orm import Mapped, mapped_column, relationship, joinedload, selectinload
 
-from config import VerificationError
+from config import VerificationError, ViolatedConstraintError
 from mixins import VerifySignatureMixin, UpdateRelatedUserActionNumberMixin
 from .base_model import BaseModel
 
@@ -12,8 +12,8 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
     USER_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active"]
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
-    domain: Mapped[str] = mapped_column(nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False, unique=True, index=True)
+    domain: Mapped[str] = mapped_column(nullable=False, unique=True, index=True)
     active: Mapped[bool] = mapped_column(nullable=False)
     action_number: Mapped[int] = mapped_column(nullable=False)
     created_at: Mapped[int] = mapped_column(nullable=False)
@@ -21,12 +21,6 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
     user_signature: Mapped[bytes] = mapped_column(nullable=False)
 
     user = relationship("User")
-    existence_host = relationship(
-        "Host",
-        primaryjoin="and_(remote(Host.user_id) == foreign(Host.user_id), remote(Host.id) != foreign(Host.id))",
-        viewonly=True,
-        uselist=False
-    )
     active_games = relationship(
         "BaseGame",
         primaryjoin="and_(BaseGame.user_id == foreign(Host.user_id), BaseGame.active == True)",
@@ -37,9 +31,25 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
     def _options(self):
         return [
             joinedload(Host.user),
-            joinedload(Host.existence_host),
-            selectinload(Host.active_games),
+            selectinload(Host.active_games)
         ]
+
+    async def violated_constraint_unique_host(self, session):
+        if self.id is not None:
+            return
+
+        query = select(Host).filter_by(user_id=self.user_id)
+        res = await session.execute(query)
+        existence_host = res.scalars().first()
+        if existence_host:
+            raise ViolatedConstraintError("Host already exists")
+
+    async def violated_constraint_unique_domain(self, session):
+        query = select(Host).filter(Host.domain == self.domain, Host.user_id != self.user_id)
+        res = await session.execute(query)
+        existence_host = res.scalars().first()
+        if existence_host:
+            raise ViolatedConstraintError("Domain is already taken")
 
     def verify_turn_off(self):
         if not self.active and self.active_games:
@@ -51,7 +61,3 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
 
         if self.domain != prev_domain:
             raise VerificationError("Host must be turned off to change domain", 409)
-
-    def verify_unique(self):
-        if self.existence_host:
-            raise VerificationError("Host already exists", 409)

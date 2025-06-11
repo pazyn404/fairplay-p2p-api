@@ -46,6 +46,10 @@ async def create(plural_model_name: str, request: Request, session: AsyncSession
         instance.action_number = user.action_number + 1
         instance.updated_at = _time
 
+    errors = await instance.violated_constraints(session)
+    if errors:
+        return format_errors(errors, 409)
+
     session.add(instance)
     await session.flush()
 

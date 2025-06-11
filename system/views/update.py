@@ -48,6 +48,11 @@ async def update(plural_model_name: str, request: Request, session: AsyncSession
     prev_data = instance.__dict__.copy()
     instance.update(**formatted_payload, action_number=user.action_number + 1, updated_at=int(time()))
     instance.update_related(prev_data)
+
+    errors = await instance.violated_constraints(session)
+    if errors:
+        return format_errors(errors, 409)
+
     errors, status_code = instance.verify(prev_data)
     if errors:
         await session.rollback()
