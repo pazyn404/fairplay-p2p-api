@@ -5,6 +5,7 @@ from .inflect_engine import inflect_engine
 from .host_endpoint import HOST_ENDPOINT
 from .exceptions import (
     VerificationError,
+    ViolatedConstraintError,
     InvalidSigningKey,
     InvalidVerifyingKey,
     InvalidSignature

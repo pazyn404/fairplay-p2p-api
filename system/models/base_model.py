@@ -4,7 +4,7 @@ import inspect
 from sqlalchemy import select
 
 from db import Base
-from config import VerificationError
+from config import VerificationError, ViolatedConstraintError
 from utils import sign
 
 
@@ -56,6 +56,17 @@ class BaseModel(Base):
     def update(self, **kwargs):
         for attr, val in kwargs.items():
             setattr(self, attr, val)
+
+    async def violated_constraints(self, session):
+        errors = []
+        for name, f in inspect.getmembers(self.__class__, predicate=inspect.isfunction):
+            if name.startswith("violated_constraint_"):
+                try:
+                    await f(self, session)
+                except ViolatedConstraintError as e:
+                    errors.append(str(e))
+
+        return errors
 
     def verify(self, prev_data=None):
         prev_data = prev_data or {}
