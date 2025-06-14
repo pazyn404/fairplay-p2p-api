@@ -70,7 +70,6 @@ async def play(game_model_name: str, request: Request, session: AsyncSession = D
         return format_errors(errors, status_code)
 
     player_action.id = player_action_id
-    await session.commit()
     # host part
     async def force_game_complete(errors, host_payload=None):
         logger.critical(errors, extra={"player_payload": player_payload, "host_payload": host_payload})
