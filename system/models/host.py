@@ -40,14 +40,14 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
 
         query = select(Host).filter_by(user_id=self.user_id)
         res = await session.execute(query)
-        existence_host = res.scalars().first()
+        existence_host = res.scalar()
         if existence_host:
             raise ViolatedConstraintError("Host already exists")
 
     async def violated_constraint_unique_domain(self, session):
         query = select(Host).filter(Host.domain == self.domain, Host.user_id != self.user_id)
         res = await session.execute(query)
-        existence_host = res.scalars().first()
+        existence_host = res.scalar()
         if existence_host:
             raise ViolatedConstraintError("Domain is already taken")
 
