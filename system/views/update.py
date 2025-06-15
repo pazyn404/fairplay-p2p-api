@@ -35,13 +35,13 @@ async def update(plural_model_name: str, request: Request, session: AsyncSession
 
     query = select(model).with_for_update().filter_by(id=formatted_payload["id"])
     res = await session.execute(query)
-    instance = res.scalars().first()
+    instance = res.scalar()
     if not instance:
         return format_errors(["Instance not found"], 404)
 
     query = select(User).with_for_update().filter_by(id=instance.user_id)
     res = await session.execute(query)
-    user = res.scalars().first()
+    user = res.scalar()
 
     await instance.fetch_related(session)
 

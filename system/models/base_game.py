@@ -93,7 +93,7 @@ class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseMod
     async def violated_constraint_unique_seed_hash(self, session):
         query = select(BaseGame).filter(BaseGame.seed_hash == self.seed_hash, BaseGame.id != self.id)
         res = await session.execute(query)
-        existence_game = res.scalars().first()
+        existence_game = res.scalar()
         if existence_game:
             raise ViolatedConstraintError("Insecure seed")
 

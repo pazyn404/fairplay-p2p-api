@@ -32,13 +32,13 @@ async def play(game_model_name: str, request: Request, session: AsyncSession = D
 
     query = select(User).with_for_update().filter_by(id=formatted_player_payload["user_id"])
     res = await session.execute(query)
-    player = res.scalars().first()
+    player = res.scalar()
     if not player:
         return format_errors(["User not found"], 404)
 
     query = select(BaseGame).with_for_update().filter_by(id=formatted_player_payload["game_id"])
     res = await session.execute(query)
-    game = res.scalars().first()
+    game = res.scalar()
     if not game:
         return format_errors(["Game not found"], 404)
 
@@ -84,7 +84,7 @@ async def play(game_model_name: str, request: Request, session: AsyncSession = D
     host_user = await session.get(User, game.user_id)
     query = select(Host).filter_by(user_id=game.user_id)
     res = await session.execute(query)
-    host = res.scalars().first()
+    host = res.scalar()
 
     for_host_data = player_action.for_host_data
     formatted_for_host_data = format_data(for_host_data)

@@ -19,7 +19,7 @@ class User(BaseModel):
     async def violated_constraint_unique_public_key(self, session):
         query = select(User).filter(User.public_key == self.public_key, User.id != self.id)
         res = await session.execute(query)
-        existence_user = res.scalars().first()
+        existence_user = res.scalar()
         if existence_user:
             raise ViolatedConstraintError("Insecure public key")
 

@@ -39,7 +39,7 @@ async def create(plural_model_name: str, request: Request, session: AsyncSession
     if model is not User:
         query = select(User).with_for_update().filter_by(id=formatted_payload["user_id"])
         res = await session.execute(query)
-        user = res.scalars().first()
+        user = res.scalar()
         if not user:
             return format_errors(["User not found"], 404)
 
