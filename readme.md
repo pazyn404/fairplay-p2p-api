@@ -64,5 +64,5 @@ docker compose --env-file ./dev/.env up
 
 * To format payload tools/payload_formatter.py should be used like:
 * python payload_formatter.py who(host_user, player) id next_action_number
-* python payload_formatter.py host_user 1 2
-* python payload_formatter.py player 2 0
+* python payload_formatter.py host_user 1 3
+* python payload_formatter.py player 2 1

@@ -33,11 +33,14 @@ def init_host():
             raise Exception(errors)
 
         user = User(**data, **formatted_payload, last_timestamp=formatted_payload["created_at"])
+
+        db.session.add(user)
+        db.session.flush()
+
         errors, status_code = user.verify()
         if errors:
             raise Exception(errors, status_code)
 
-        db.session.add(user)
         db.session.commit()
 
     host = db.session.query(Host).first()

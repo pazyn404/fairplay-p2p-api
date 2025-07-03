@@ -10,17 +10,6 @@ from formatters import format_data
 class BaseModel(db.Model):
     __abstract__ = True
 
-    def __init__(self, **kwargs):
-        for column in self.__table__.columns:
-            default = column.default
-            if default is not None:
-                if callable(default.arg):
-                    kwargs[column.name] = default.arg()
-                else:
-                    kwargs[column.name] = default.arg
-
-        super().__init__(**kwargs)
-
     @property
     def data(self):
         return self._parse_attrs(self.__class__.DATA_ATTRIBUTES)
