@@ -11,17 +11,6 @@ from utils import sign
 class BaseModel(Base):
     __abstract__ = True
 
-    def __init__(self, **kwargs):
-        for column in self.__table__.columns:
-            default = column.default
-            if default is not None:
-                if callable(default.arg):
-                    kwargs[column.name] = default.arg()
-                else:
-                    kwargs[column.name] = default.arg
-
-        super().__init__(**kwargs)
-
     def __init_subclass__(cls, **kwargs):
         if not cls.__dict__.get("__abstract__", False):
             table_name = re.sub(r"(?<!^)(?=[A-Z])", "_", cls.__name__)
