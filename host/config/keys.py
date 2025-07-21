@@ -1,6 +1,6 @@
 from os import environ
 
-from config.crypto import EcdsaSigningKey, EcdsaVerifyingKey
+from crypto import EcdsaSigningKey, EcdsaVerifyingKey
 
 
 SigningKey = EcdsaSigningKey

@@ -1,4 +1,4 @@
-structure = {
+optimal_stopping_player_action_structure = {
     "user_id": {
         "type": int
     },

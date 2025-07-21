@@ -9,4 +9,3 @@ redis==5.2.1
 httpx==0.28.1
 ecdsa==0.19.1
 numpy==2.2.4
-inflect==7.5.0

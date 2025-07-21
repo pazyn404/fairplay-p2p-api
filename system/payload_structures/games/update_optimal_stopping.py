@@ -1,4 +1,4 @@
-structure = {
+update_optimal_stopping_game_structure = {
     "id": {
         "type": int
     },
@@ -25,7 +25,7 @@ structure = {
     "numbers_count": {
         "type": int,
         "gte": 10,
-        "lte": 20,
+        "lte": 50,
         "optional": True
     },
     "std": {
@@ -43,7 +43,7 @@ structure = {
     "top": {
         "type": int,
         "gte": 1,
-        "lte": 10,
+        "lte": 50,
         "optional": True
     },
     "user_signature": {

@@ -1,4 +1,4 @@
-structure = {
+update_host_structure = {
     "id": {
         "type": int
     },

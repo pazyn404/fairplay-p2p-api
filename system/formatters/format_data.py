@@ -1,8 +1,9 @@
 from copy import copy
 from base64 import b64encode
+from typing import Any
 
 
-def format_data(data):
+def format_data(data: Any) -> Any:
     formatted_data = copy(data)
     if isinstance(formatted_data, dict):
         for param, val in formatted_data.items():

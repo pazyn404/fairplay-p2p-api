@@ -3,7 +3,11 @@ from base64 import b64decode
 from utils.verify_payload import verify_payload
 
 
-def format_payload(payload, structure, strict=True):
+def format_payload(
+        payload: dict[str, int | bool | str | None],
+        structure: dict[str, dict],
+        strict: bool = True
+) -> tuple[dict[str, int | str | bytes | None], list[str]]:
     errors = verify_payload(payload, structure, strict)
     if errors:
         return {}, errors
@@ -22,4 +26,4 @@ def format_payload(payload, structure, strict=True):
             if val is not None and encoding == "base64":
                 formatted_payload[param] = b64decode(val)
 
-    return formatted_payload, errors
+    return formatted_payload, []

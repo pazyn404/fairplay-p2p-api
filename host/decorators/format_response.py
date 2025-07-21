@@ -6,7 +6,7 @@ from formatters import format_data
 
 def format_response(f: Callable) -> Callable:
     @functools.wraps(f)
-    def inner(*args, **kwargs):
+    def inner(*args, **kwargs) -> tuple[dict, int]:
         data, status_code = f(*args, **kwargs)
         formatted_data = format_data(data)
 
