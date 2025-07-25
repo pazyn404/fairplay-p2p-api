@@ -1,4 +1,4 @@
-structure = {
+create_user_structure = {
     "id": {
         "type": int
     },

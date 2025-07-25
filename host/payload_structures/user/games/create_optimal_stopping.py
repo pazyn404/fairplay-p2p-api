@@ -1,4 +1,4 @@
-structure = {
+create_optimal_stopping_game_structure = {
     "user_id": {
         "type": int
     },
@@ -21,7 +21,7 @@ structure = {
     "numbers_count": {
         "type": int,
         "gte": 10,
-        "lte": 20
+        "lte": 50
     },
     "std": {
         "type": int,
@@ -36,6 +36,6 @@ structure = {
     "top": {
         "type": int,
         "gte": 1,
-        "lte": 5
+        "lte": 50
     }
 }

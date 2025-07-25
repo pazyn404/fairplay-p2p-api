@@ -1,4 +1,4 @@
-structure = {
+reveal_setup_structure = {
     "seed": {
         "type": str,
         "encoding": "base64"

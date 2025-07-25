@@ -1,9 +1,12 @@
 from app import db
-from mixins import VerifyTimestampMixin
-from .base_model import BaseModel
+from mixins import (
+    VerifySystemSignatureMixin,
+    UpdateRelatedUserActionNumberMixin
+)
+from .base import BaseModel
 
 
-class Host(VerifyTimestampMixin, BaseModel):
+class Host(VerifySystemSignatureMixin, UpdateRelatedUserActionNumberMixin, BaseModel):
     DATA_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active", "created_at", "updated_at", "system_signature"]
     SYSTEM_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active", "created_at", "updated_at"]
 
@@ -17,3 +20,6 @@ class Host(VerifyTimestampMixin, BaseModel):
     system_signature = db.Column(db.LargeBinary, nullable=False)
 
     user = db.relationship("User", uselist=False)
+
+    def fill_from_related(self) -> None:
+        self.action_number = self.user.action_number

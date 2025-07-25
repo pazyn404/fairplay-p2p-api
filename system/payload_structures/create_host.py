@@ -1,4 +1,4 @@
-structure = {
+create_host_structure = {
     "user_id": {
         "type": int
     },

@@ -1,11 +1,11 @@
-from .optimal_stopping_player_action import structure as optimal_stopping_player_action
-from .optimal_stopping_host_action import structure as optimal_stopping_host_action
+from .optimal_stopping_host_action import optimal_stopping_host_action_structure
+from .optimal_stopping_player_action import optimal_stopping_player_action_structure
 
 
-host_structures = {
-    "optimal_stopping_game": optimal_stopping_host_action
+game_host_action_structures = {
+    "optimal_stopping": optimal_stopping_host_action_structure
 }
 
-player_structures = {
-    "optimal_stopping_game": optimal_stopping_player_action
+game_player_action_structures = {
+    "optimal_stopping": optimal_stopping_player_action_structure
 }

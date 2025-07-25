@@ -6,4 +6,3 @@ redis==5.2.1
 requests==2.32.3
 ecdsa==0.19.1
 numpy==2.2.4
-inflect==7.5.0

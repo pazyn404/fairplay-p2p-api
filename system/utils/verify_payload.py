@@ -2,7 +2,11 @@ import binascii
 from base64 import b64decode
 
 
-def verify_payload(payload, structure, strict=True):
+def verify_payload(
+        payload: dict[str, int | bool | str | None],
+        structure: dict[str, dict],
+        strict: bool = True
+) -> list[str]:
     filled = 0
     errors = []
     for param, info in structure.items():

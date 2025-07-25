@@ -1,4 +1,4 @@
-structure = {
+optimal_stopping_host_action_structure = {
     "number": {
         "type": int
     },
