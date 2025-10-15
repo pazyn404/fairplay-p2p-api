@@ -19,6 +19,8 @@ DAG structure that allows to crawl messages much easier and faster(should be tes
 * ## Windows
 * Init
 ```
+git clone https://github.com/pazyn404/fairplay-p2p-api.git
+cd fairplay-p2p-api
 mkdir system\keys
 mkdir host\keys
 mkdir player\keys
@@ -40,7 +42,10 @@ cd host
 docker compose --env-file .\dev\.env up
 ```
 * ## Linux, MacOS
+* Init
 ```
+git clone https://github.com/pazyn404/fairplay-p2p-api.git
+cd fairplay-p2p-api
 mkdir system/keys host/keys player/keys
 python3 -m venv venv
 source venv/bin/activate
