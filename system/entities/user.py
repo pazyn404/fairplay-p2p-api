@@ -1,11 +1,10 @@
+from base64 import b64encode
+
 from config import VerifyingKey
 from .base import BaseEntity
 
 
 class User(BaseEntity):
-    DATA_ATTRIBUTES = ["id", "public_key", "action_number", "balance", "created_at", "system_signature"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = ["id", "public_key", "action_number", "balance", "created_at"]
-
     def __init__(
             self,
             *,
@@ -22,6 +21,16 @@ class User(BaseEntity):
         self.action_number = action_number
         self.balance = balance
         self.created_at = created_at
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str]:
+        return {
+            "id": self.id,
+            "public_key": b64encode(self.public_key).decode(),
+            "action_number": self.action_number,
+            "balance": self.balance,
+            "created_at": self.created_at
+        }
 
     def verify_public_key(self) -> None:
         VerifyingKey(self.public_key)

@@ -2,14 +2,28 @@ from .base_game_host_action import BaseGameHostAction
 
 
 class OptimalStoppingHostAction(BaseGameHostAction):
-    DATA_ATTRIBUTES = BaseGameHostAction.DATA_ATTRIBUTES + ["number"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = BaseGameHostAction.SYSTEM_SIGNATURE_ATTRIBUTES + ["number"]
-    USER_SIGNATURE_ATTRIBUTES = BaseGameHostAction.USER_SIGNATURE_ATTRIBUTES + ["number"]
-
-    FOR_PLAYER_DATA_ATTRIBUTES = BaseGameHostAction.FOR_PLAYER_DATA_ATTRIBUTES + ["number"]
-    FOR_PLAYER_SIGNATURE_ATTRIBUTES = BaseGameHostAction.FOR_PLAYER_SIGNATURE_ATTRIBUTES + ["number"]
-
     def __init__(self, *, number: int, **kwargs) -> None:
         super().__init__(**kwargs)
 
         self.number = number
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().user_signature_data,
+            "number": self.number
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().system_signature_data,
+            "number": self.number
+        }
+
+    @property
+    def for_player_system_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().for_player_system_signature_data,
+            "number": self.number
+        }

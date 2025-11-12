@@ -1,25 +1,13 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from hashlib import sha256
+from base64 import b64encode
 
 from exceptions import VerificationError
 from mixins import VerifySignatureMixin, UpdateRelatedUserActionNumberMixin
 from ..base import BaseEntity
 
 
-class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity):
-    DATA_ATTRIBUTES = [
-        "id", "user_id", "player_id", "winner_id", "action_number", "game_name|GAME_NAME", "bet", "duration",
-        "active", "seed_hash", "seed", "started_at", "finished_at", "created_at", "updated_at",
-        "player_actions|player_actions.data", "host_actions|host_actions.data", "system_signature"
-    ]
-    SYSTEM_SIGNATURE_ATTRIBUTES = [
-        "id", "user_id", "player_id", "winner_id", "action_number", "game_action_number", "game_name|GAME_NAME", "bet",
-        "duration", "active", "seed_hash", "seed", "started_at", "finished_at", "created_at", "updated_at"
-    ]
-    USER_SIGNATURE_ATTRIBUTES = [
-        "id", "user_id", "action_number", "game_name|GAME_NAME", "bet", "duration", "active", "seed_hash", "seed"
-    ]
-
+class BaseGame(ABC, VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity):
     def __init__(
             self,
             *,
@@ -65,6 +53,41 @@ class BaseGame(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEnt
         self.host = None
         self.player_actions = None
         self.host_actions = None
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str | None]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "action_number": self.action_number,
+            "game_name": self.__class__.GAME_NAME,
+            "bet": self.bet,
+            "duration": self.duration,
+            "active": self.active,
+            "seed_hash": b64encode(self.seed_hash).decode(),
+            "seed": b64encode(self.seed).decode() if self.seed is not None else None
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str | None]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "player_id": self.player_id,
+            "winner_id": self.winner_id,
+            "action_number": self.action_number,
+            "game_action_number": self.game_action_number,
+            "game_name": self.__class__.GAME_NAME,
+            "bet": self.bet,
+            "duration": self.duration,
+            "active": self.active,
+            "seed_hash": b64encode(self.seed_hash).decode(),
+            "seed": b64encode(self.seed).decode() if self.seed is not None else None,
+            "started_at": self.started_at,
+            "finished_at": self.finished_at,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
     def fill_from_related(self) -> None:
         self.action_number = self.user.action_number

@@ -7,10 +7,6 @@ from .base_game import BaseGame
 class OptimalStoppingGame(BaseGame):
     GAME_NAME = "optimal stopping"
 
-    DATA_ATTRIBUTES = BaseGame.DATA_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = BaseGame.SYSTEM_SIGNATURE_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
-    USER_SIGNATURE_ATTRIBUTES = BaseGame.USER_SIGNATURE_ATTRIBUTES + ["numbers_count", "mean", "std", "top"]
-
     def __init__(self, *, numbers_count: int, mean: int, std: int, top: int, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -18,6 +14,26 @@ class OptimalStoppingGame(BaseGame):
         self.mean = mean
         self.std = std
         self.top = top
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str | None]:
+        return {
+            **super().user_signature_data,
+            "numbers_count": self.numbers_count,
+            "mean": self.mean,
+            "std": self.std,
+            "top": self.top
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str | None]:
+        return {
+            **super().system_signature_data,
+            "numbers_count": self.numbers_count,
+            "mean": self.mean,
+            "std": self.std,
+            "top": self.top
+        }
 
     def player_win(self) -> bool:
         rng = np.random.default_rng(int.from_bytes(self.seed))

@@ -4,10 +4,6 @@ from .base import BaseEntity
 
 
 class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity):
-    DATA_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active", "created_at", "updated_at", "system_signature"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active", "created_at", "updated_at"]
-    USER_SIGNATURE_ATTRIBUTES = ["id", "user_id", "action_number", "domain", "active"]
-
     def __init__(
             self,
             *,
@@ -33,6 +29,28 @@ class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity)
 
         self.user = None
         self.active_games = None
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "action_number": self.action_number,
+            "domain": self.domain,
+            "active": self.active
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "action_number": self.action_number,
+            "domain": self.domain,
+            "active": self.active,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at
+        }
 
     def fill_from_related(self) -> None:
         self.action_number = self.user.action_number

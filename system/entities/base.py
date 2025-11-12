@@ -1,8 +1,7 @@
 import inspect
 from copy import deepcopy
-from typing import Any
 
-from exceptions import VerificationError, ViolatedConstraintError
+from exceptions import VerificationError, VerificationErrorsList
 from utils import sign
 
 
@@ -11,16 +10,12 @@ class BaseEntity:
         self._prev_data = {}
 
     @property
-    def data(self) -> dict:
-        return self._parse_attrs(self.__class__.DATA_ATTRIBUTES)
+    def user_signature_data(self) -> dict[str, int | str | None]:
+        raise NotImplementedError
 
     @property
-    def user_signature_data(self) -> dict:
-        return self._parse_attrs(self.__class__.USER_SIGNATURE_ATTRIBUTES)
-
-    @property
-    def system_signature_data(self) -> dict:
-        return self._parse_attrs(self.__class__.SYSTEM_SIGNATURE_ATTRIBUTES)
+    def system_signature_data(self) -> dict[str, int | str | None]:
+        raise NotImplementedError
 
     @property
     def system_signature(self) -> bytes:
@@ -39,7 +34,7 @@ class BaseEntity:
         for attr, val in kwargs.items():
             setattr(self, attr, val)
 
-    def verify(self) -> list[VerificationError]:
+    def verify(self) -> None:
         errors = []
         for name, f in inspect.getmembers(self.__class__, predicate=inspect.isfunction):
             if name.startswith("verify_"):
@@ -50,7 +45,8 @@ class BaseEntity:
                 except VerificationError as e:
                     errors.append(e)
 
-        return errors
+        if errors:
+            raise VerificationErrorsList(errors)
 
     def update_related(self) -> None:
         for name, f in inspect.getmembers(self.__class__, predicate=inspect.isfunction):
@@ -58,26 +54,3 @@ class BaseEntity:
                 params = list(inspect.signature(f).parameters)[1:]
                 selected_prev_data = {param: self._prev_data.get(param) for param in params}
                 f(self, **selected_prev_data)
-
-    def _parse_attrs(self, attrs: list[str]) -> dict:
-        def parse_attr(obj: Any, attr: str) -> Any:
-            if "." not in attr:
-                res = getattr(obj, attr)
-                return res
-
-            relation, attr = attr.split(".", maxsplit=1)
-            val = getattr(obj, relation)
-            if isinstance(val, list):
-                return [parse_attr(_val, attr) for _val in val]
-
-            return parse_attr(val, attr)
-
-        data = {}
-        for attr in attrs:
-            if "|" in attr:
-                name, attr = attr.split("|")
-                data[name] = parse_attr(self, attr)
-            else:
-                data[attr] = parse_attr(self, attr)
-
-        return data

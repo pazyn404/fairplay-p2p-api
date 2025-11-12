@@ -29,7 +29,7 @@ class BaseGameRepository(AbstractBaseGameRepository):
         game.player_actions = player_actions
 
     @staticmethod
-    def _common_attrs(game: BaseGame | BaseGameModel) -> dict[str, bytes | str | int | None]:
+    def _common_attrs(game: BaseGame | BaseGameModel) -> dict[str, int | str | bytes | None]:
         return {
             "id": game.id,
             "user_id": game.user_id,

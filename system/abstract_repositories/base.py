@@ -1,16 +1,16 @@
 import inspect
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from entities import BaseEntity
-from exceptions import ViolatedConstraintError
+from exceptions import ViolatedConstraintError, ViolatedConstraintErrorsList
 
 
-class AbstractBaseRepository:
+class AbstractBaseRepository(ABC):
     @abstractmethod
     async def save(self, entity: BaseEntity) -> None:
         raise NotImplementedError
 
-    async def violated_constraints(self, entity: BaseEntity) -> list[str]:
+    async def violated_constraints(self, entity: BaseEntity) -> None:
         errors = []
         for name, f in inspect.getmembers(self.__class__, predicate=inspect.isfunction):
             if name.startswith("violated_constraint_"):
@@ -19,4 +19,5 @@ class AbstractBaseRepository:
                 except ViolatedConstraintError as e:
                     errors.append(e)
 
-        return errors
+        if errors:
+            raise ViolatedConstraintErrorsList(errors)

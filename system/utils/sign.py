@@ -1,12 +1,10 @@
 import json
 
 from config import SYSTEM_SIGNING_KEY
-from formatters import format_data
 
 
-def sign(data: dict) -> bytes:
-    formatted_data = format_data(data)
-    message = json.dumps(formatted_data, separators=(",", ":"))
+def sign(data: dict[str, int | str | None]) -> bytes:
+    message = json.dumps(data, separators=(",", ":"))
     signature = SYSTEM_SIGNING_KEY.sign(message.encode())
 
     return signature

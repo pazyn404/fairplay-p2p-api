@@ -1,0 +1,5 @@
+from .base_game_host_action_for_player_response import BaseGameHostActionForPlayerResponseSchema
+
+
+class OptimalStoppingHostActionForPlayerResponseSchema(BaseGameHostActionForPlayerResponseSchema):
+    number: int

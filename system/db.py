@@ -1,6 +1,7 @@
-from typing import AsyncGenerator, Generator
+from typing import Generator
+from contextlib import contextmanager
 
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.ext.declarative import declarative_base
@@ -24,10 +25,7 @@ sync_session_factory = sessionmaker(
 
 Base = declarative_base()
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    async with session_factory() as session:
-        yield session
-
-def get_sync_session() -> Session:
+@contextmanager
+def get_sync_session() -> Generator[Session, None, None]:
     with sync_session_factory() as session:
-        return session
+        yield session
