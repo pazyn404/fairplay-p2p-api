@@ -1,0 +1,5 @@
+from .base_game_player_action_for_host_request import BaseGamePlayerActionForHostRequestSchema
+
+
+class OptimalStoppingPlayerActionForHostRequestSchema(BaseGamePlayerActionForHostRequestSchema):
+    action: str

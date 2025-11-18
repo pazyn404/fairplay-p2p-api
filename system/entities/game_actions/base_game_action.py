@@ -3,19 +3,6 @@ from ..base import BaseEntity
 
 
 class BaseGameAction(VerifySignatureMixin, BaseEntity):
-    DATA_ATTRIBUTES = [
-        "id", "user_id", "action_number", "game_name|game.__class__.GAME_NAME", "game_id",
-        "game_revision|game.action_number", "game_action_number", "created_at", "system_signature"
-    ]
-    SYSTEM_SIGNATURE_ATTRIBUTES = [
-        "id", "user_id", "action_number", "game_name|game.__class__.GAME_NAME", "game_id",
-        "game_revision|game.action_number", "game_action_number", "created_at"
-    ]
-    USER_SIGNATURE_ATTRIBUTES = [
-        "user_id", "action_number", "game_name|game.__class__.GAME_NAME", "game_id",
-        "game_revision|game.action_number", "game_action_number"
-    ]
-
     def __init__(
             self,
             *,
@@ -36,6 +23,30 @@ class BaseGameAction(VerifySignatureMixin, BaseEntity):
         self.game_action_number = game_action_number
         self.created_at = created_at
         self.user_signature = user_signature
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str]:
+        return {
+            "user_id": self.user_id,
+            "action_number": self.action_number,
+            "game_name": self.game.__class__.GAME_NAME,
+            "game_id": self.game_id,
+            "game_revision": self.game.action_number,
+            "game_action_number": self.game_action_number
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str]:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "action_number": self.action_number,
+            "game_name": self.game.__class__.GAME_NAME,
+            "game_id": self.game_id,
+            "game_revision": self.game.action_number,
+            "game_action_number": self.game_action_number,
+            "created_at": self.created_at
+        }
 
     def fill_from_related(self) -> None:
         self.action_number = self.user.action_number

@@ -17,5 +17,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-import endpoints
+import views
 import middlewares
+import exception_handlers

@@ -3,16 +3,6 @@ from .base_game_action import BaseGameAction
 
 
 class BaseGameHostAction(BaseGameAction):
-    FOR_PLAYER_DATA_ATTRIBUTES = [
-        "action_number|player.action_number", "game_name|game.__class__.GAME_NAME",
-        "game_revision|game.action_number", "game_action_number", "created_at",
-        "system_signature|for_player_signature"
-    ]
-    FOR_PLAYER_SIGNATURE_ATTRIBUTES = [
-        "action_number|player.action_number", "game_name|game.__class__.GAME_NAME",
-        "game_revision|game.action_number", "game_action_number", "created_at"
-    ]
-
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -21,16 +11,18 @@ class BaseGameHostAction(BaseGameAction):
         self.player = None
 
     @property
-    def for_player_data(self) -> dict:
-        return self._parse_attrs(self.__class__.FOR_PLAYER_DATA_ATTRIBUTES)
+    def for_player_system_signature_data(self) -> dict[str, int | str]:
+        return {
+            "action_number": self.player.action_number,
+            "game_name": self.game.__class__.GAME_NAME,
+            "game_revision": self.game.action_number,
+            "game_action_number": self.game_action_number,
+            "created_at": self.created_at
+        }
 
     @property
-    def for_player_signature_data(self) -> dict:
-        return self._parse_attrs(self.__class__.FOR_PLAYER_SIGNATURE_ATTRIBUTES)
-
-    @property
-    def for_player_signature(self) -> bytes:
-        data = self.for_player_signature_data
+    def for_player_system_signature(self) -> bytes:
+        data = self.for_player_system_signature_data
         signature = sign(data)
 
         return signature

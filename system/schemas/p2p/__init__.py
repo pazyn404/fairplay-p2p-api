@@ -1,0 +1,23 @@
+from .base_game_player_action_request import BaseGamePlayerActionRequestSchema
+from .host_reveal_setup_response import HostRevealSetupResponseSchema
+from .optimal_stopping_player_action_request import OptimalStoppingPlayerActionRequestSchema
+from .optimal_stopping_player_action_for_host_request import OptimalStoppingPlayerActionForHostRequestSchema
+from .optimal_stopping_host_action_response import OptimalStoppingHostActionResponseSchema
+from .optimal_stopping_host_action_for_player_response import OptimalStoppingHostActionForPlayerResponseSchema
+
+
+game_player_action_request_schemas = {
+    "optimal_stopping": OptimalStoppingPlayerActionRequestSchema
+}
+
+game_player_action_for_host_request_schemas = {
+    "optimal_stopping": OptimalStoppingPlayerActionForHostRequestSchema
+}
+
+game_host_action_response_schemas = {
+    "optimal_stopping": OptimalStoppingHostActionResponseSchema
+}
+
+game_host_action_for_player_response_schemas = {
+    "optimal_stopping": OptimalStoppingHostActionForPlayerResponseSchema
+}

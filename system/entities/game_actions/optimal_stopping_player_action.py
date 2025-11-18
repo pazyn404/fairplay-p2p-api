@@ -3,17 +3,31 @@ from .base_game_player_action import BaseGamePlayerAction
 
 
 class OptimalStoppingPlayerAction(BaseGamePlayerAction):
-    DATA_ATTRIBUTES = BaseGamePlayerAction.DATA_ATTRIBUTES + ["action"]
-    SYSTEM_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.SYSTEM_SIGNATURE_ATTRIBUTES + ["action"]
-    USER_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.USER_SIGNATURE_ATTRIBUTES + ["action"]
-
-    FOR_HOST_DATA_ATTRIBUTES = BaseGamePlayerAction.FOR_HOST_DATA_ATTRIBUTES + ["action"]
-    FOR_HOST_SIGNATURE_ATTRIBUTES = BaseGamePlayerAction.FOR_HOST_SIGNATURE_ATTRIBUTES + ["action"]
-
     def __init__(self, *, action: str, **kwargs) -> None:
         super().__init__(**kwargs)
 
         self.action = action
+
+    @property
+    def user_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().user_signature_data,
+            "action": self.action
+        }
+
+    @property
+    def system_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().system_signature_data,
+            "action": self.action
+        }
+
+    @property
+    def for_host_system_signature_data(self) -> dict[str, int | str]:
+        return {
+            **super().for_host_system_signature_data,
+            "action": self.action
+        }
 
     def is_last_action(self) -> bool:
         return self.action == "stop"

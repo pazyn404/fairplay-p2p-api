@@ -1,4 +1,4 @@
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 
 from exceptions import VerificationError
 from mixins import UpdateRelatedUserActionNumberMixin
@@ -6,13 +6,7 @@ from utils import sign
 from .base_game_action import BaseGameAction
 
 
-class BaseGamePlayerAction(UpdateRelatedUserActionNumberMixin, BaseGameAction):
-    FOR_HOST_DATA_ATTRIBUTES = ["game_id", "created_at", "system_signature|for_host_signature"]
-    FOR_HOST_SIGNATURE_ATTRIBUTES = [
-        "action_number|host_user.action_number", "game_id", "game_name|game.__class__.GAME_NAME",
-        "game_revision|game.action_number", "game_action_number", "created_at"
-    ]
-
+class BaseGamePlayerAction(ABC, UpdateRelatedUserActionNumberMixin, BaseGameAction):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -23,16 +17,19 @@ class BaseGamePlayerAction(UpdateRelatedUserActionNumberMixin, BaseGameAction):
         self.host = None
 
     @property
-    def for_host_data(self) -> dict:
-        return self._parse_attrs(self.__class__.FOR_HOST_DATA_ATTRIBUTES)
+    def for_host_system_signature_data(self) -> dict[str, int | str]:
+        return {
+            "action_number": self.host_user.action_number,
+            "game_id": self.game_id,
+            "game_name": self.game.__class__.GAME_NAME,
+            "game_revision": self.game.action_number,
+            "game_action_number": self.game_action_number,
+            "created_at": self.created_at
+        }
 
     @property
-    def for_host_signature_data(self) -> dict:
-        return self._parse_attrs(self.__class__.FOR_HOST_SIGNATURE_ATTRIBUTES)
-
-    @property
-    def for_host_signature(self) -> bytes:
-        data = self.for_host_signature_data
+    def for_host_system_signature(self) -> bytes:
+        data = self.for_host_system_signature_data
         signature = sign(data)
 
         return signature

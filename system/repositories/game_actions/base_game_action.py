@@ -5,7 +5,7 @@ from abstract_repositories import AbstractBaseGameActionRepository
 
 class BaseGameActionRepository(AbstractBaseGameActionRepository):
     @staticmethod
-    def _common_attrs(game_action: BaseGameAction | BaseGameActionModel) -> dict[str, bytes | str | int | None]:
+    def _common_attrs(game_action: BaseGameAction | BaseGameActionModel) -> dict[str, int | str | bytes | None]:
         return {
             "id": game_action.id,
             "user_id": game_action.user_id,
