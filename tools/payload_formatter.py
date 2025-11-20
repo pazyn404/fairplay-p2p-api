@@ -56,9 +56,9 @@ player_actions = {
     "optimal_stopping_player_action": {
         "input": {
             "game_id": int,
-            "game_revision": int,
-            "game_action_number": int,
-            "action": str
+            ("game_revision", "game.action_number(e.g. host_user.action_number what was used to lastly create or update the game"): int,
+            ("game_action_number", "The  action number in the game(start from 1)"): int,
+            ("action", "next or stop(stop can't be first action)"): str
         },
         "default": [
             ("user_id", user_id),
@@ -83,12 +83,12 @@ player_actions = {
     }
 }
 
-user_actions = {
+host_user_actions = {
     "update_host": {
         "input": {
             "id": int,
             "domain": str,
-            "active": bool
+            ("active", "should be 't' or 'f'"): bool
         },
         "default": [
             ("user_id", user_id),
@@ -110,13 +110,13 @@ user_actions = {
     },
     "create_optimal_stopping_game": {
         "input": {
-            "bet": int,
-            "duration": int,
-            "active": bool,
-            "numbers_count": int,
-            "mean": int,
-            "std": int,
-            "top": int,
+            ("bet", "should be grater than 0"): int,
+            ("duration", "should be between 11 and 299 inclusive"): int,
+            ("active", "should be 't' or 'f'(defines whether balance will be updated(withdraw money from balance if 't', leave balance unchanged if 'f'))"): bool,
+            ("numbers_count", "should be between 11 and 49 inclusive"): int,
+            ("mean", "should be between 1 and 999 inclusive"): int,
+            ("std", "should be between 101 and 999 inclusive"): int,
+            ("top", "should be between 2 and 49 inclusive"): int,
         },
         "default": [
             ("id", None),
@@ -157,13 +157,13 @@ user_actions = {
     "update_optimal_stopping_game": {
         "input": {
             "id": int,
-            "bet": int,
-            "duration": int,
-            "active": bool,
-            "numbers_count": int,
-            "mean": int,
-            "std": int,
-            "top": int,
+            ("bet", "should be grater than 0"): int,
+            ("duration", "should be between 11 and 299 inclusive"): int,
+            ("active", "set to 't' or 'f'(defines whether balance will be updated(t->f return money to balance, f->t withdraw money from balance))"): bool,
+            ("numbers_count", "should be between 11 and 49 inclusive"): int,
+            ("mean", "should be between 1 and 999 inclusive"): int,
+            ("std", "should be between 101 and 999 inclusive"): int,
+            ("top", "should be between 2 and 49 inclusive"): int,
         },
         "default": [
             ("user_id", user_id),
@@ -202,66 +202,86 @@ user_actions = {
     }
 }
 
-if who == "player":
+if who == "host_user":
+    actions = host_user_actions
+elif who == "player":
     actions = player_actions
 else:
-    actions = user_actions
+    raise Exception("Unknown role(choose between host and player)")
 
+actions_list = list([*actions.keys(), "exit"])
 
 while True:
-    def clear_screen():
+    def clear_screen() -> None:
         if sys.platform == "win32":
             os.system("cls")
         else:
             os.system("clear")
 
+    def safe_input(prompt, _type: type[int, str, bool]) -> int | str | bool:
+        while True:
+            value = input(prompt)
+            try:
+                if _type is int:
+                    return int(value)
+                if _type is bool:
+                    if value not in ("t", "f"):
+                        raise ValueError
+                    return value == "t"
+                return value
+            except ValueError:
+                pass
+
     clear_screen()
-    for action in actions:
-        print(action)
-    print("exit")
+    for i, action in enumerate(actions_list):
+        print(f"{i + 1}: {action}")
     
-    action = input(">")
+    number = safe_input("number>", int) - 1
     clear_screen()
-    
+
+    if not 0 <= number < len(actions_list):
+        continue
+
+    action = actions_list[number]
+
     if action == "exit":
         break
 
     params = {}
     for param, _type in actions[action]["input"].items():
-        if _type is str:
-            params[param] = input(f"{param}:{_type.__name__}>")
-        elif _type is int:
-            params[param] = int(input(f"{param}:{_type.__name__}>"))
-        elif _type is bool:
-            params[param] = input(f"{param}:{_type.__name__}>") == "t"
+        if isinstance(param, tuple):
+            param_name, param_description = param
+        else:
+            param_name, param_description = param, ""
+        prompt = f"{param_name}({param_description}):{_type.__name__}>"
+        params[param_name] = safe_input(prompt, _type)
 
     clear_screen()
 
     for elem in actions[action]["default"]:
         if len(elem) == 2:
-            param, val = elem
+            param_name, val = elem
             if callable(val):
-                params[param] = val()
+                params[param_name] = val()
             else:
-                params[param] = val
+                params[param_name] = val
         elif len(elem) == 3:
-            param, f, kws = elem
+            param_name, f, kws = elem
             kwargs = {kw: params[kw] for kw in kws}
-            params[param] = f(**kwargs)
-
+            params[param_name] = f(**kwargs)
 
     signature_params = {}
     for elem in actions[action]["signature"]:
         if isinstance(elem, str):
-            param, val = elem, params[elem]
+            param_name, val = elem, params[elem]
         elif isinstance(elem, tuple):
-            param, val = elem
+            param_name, val = elem
 
-        signature_params[param] = val
+        signature_params[param_name] = val
 
     params["user_signature"] = sign(signature_params)
 
-    output_params = {param: params[param] for param in actions[action]["output"]}
+    output_params = {param_name: params[param_name] for param_name in actions[action]["output"]}
 
     action_number += 1
 
