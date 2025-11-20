@@ -5,11 +5,10 @@ from pydantic import BaseModel, Field, Base64Bytes, field_serializer
 
 class BaseUpdateGameRequestSchema(BaseModel):
     id: int
-    bet: Annotated[int, Field(gt=0)] | None
-    duration: Annotated[int, Field(gt=10, lt=300)] | None
-    active: bool | None
-    active: bool | None
-    seed_hash: Base64Bytes | None
+    bet: Annotated[int, Field(gt=0)] | None = None
+    duration: Annotated[int, Field(gt=10, lt=300)] | None = None
+    active: bool | None = None
+    seed_hash: Base64Bytes | None = None
     user_signature: Base64Bytes
 
     @field_serializer("seed_hash")

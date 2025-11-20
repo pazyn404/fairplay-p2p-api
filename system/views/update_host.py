@@ -40,7 +40,7 @@ async def update_host(payload: UpdateHostRequestSchema, session: AsyncSession = 
     _time = int(time())
     await host_repository.fetch_related(host)
     host.store_prev_data()
-    host.update(updated_at=_time, **payload.model_dump())
+    host.update(updated_at=_time, **payload.model_dump(exclude_unset=True))
     host.update_related()
     host.fill_from_related()
 

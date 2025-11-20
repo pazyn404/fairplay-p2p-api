@@ -3,8 +3,8 @@ from pydantic import BaseModel, Base64Bytes, field_serializer
 
 class UpdateHostRequestSchema(BaseModel):
     id: int
-    domain: str | None
-    active: bool | None
+    domain: str | None = None
+    active: bool | None = None
     user_signature: Base64Bytes
 
     @field_serializer("user_signature")
