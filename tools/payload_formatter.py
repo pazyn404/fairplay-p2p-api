@@ -57,7 +57,7 @@ player_actions = {
         "input": {
             "game_id": int,
             ("game_revision", "game.action_number(e.g. host_user.action_number what was used to lastly create or update the game"): int,
-            ("game_action_number", "The  action number in the game(start from 1)"): int,
+            ("game_action_number", "The action number in the game(start from 1)"): int,
             ("action", "next or stop(stop can't be first action)"): str
         },
         "default": [
