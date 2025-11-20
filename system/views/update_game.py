@@ -46,7 +46,7 @@ async def update_game(
     _time = int(time())
     await game_repository.fetch_related(game)
     game.store_prev_data()
-    game.update(updated_at=_time, **payload.model_dump())
+    game.update(updated_at=_time, **payload.model_dump(exclude_unset=True))
     game.update_related()
     game.fill_from_related()
 
