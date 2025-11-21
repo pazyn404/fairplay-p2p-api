@@ -5,23 +5,23 @@ services:
     restart:
       unless-stopped
     container_name: system-app
-    command: uvicorn app:app --host 0.0.0.0 --reload
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
     env_file:
       - dev/app.env
     ports:
-      - "${FASTAPI_RUN_PORT}:${FASTAPI_RUN_PORT}"
+      - "8000:8000"
     volumes:
       - .:/app
     depends_on:
       - postgres
 
-  celery:
+  celery_app:
     build:
       dockerfile: Dockerfile
-    container_name: system-celery
-    command: celery -A celery_app worker --concurrency=${WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
+    container_name: system-celery_app
+    command: celery -A celery_app worker --concurrency=${CELERY_WORKERS_COUNT} --loglevel ${CELERY_LOG_LEVEL}
     env_file:
-      - dev/app.env
+      - dev/celery_app.env
     volumes:
       - .:/app
     depends_on:

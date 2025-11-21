@@ -1,7 +1,7 @@
 from base64 import b64encode
 
 from app import app
-from config import SYSTEM_VERIFYING_KEY
+from keys import SYSTEM_VERIFYING_KEY
 
 
 @app.api_route("/system_public_key", methods=["GET"])

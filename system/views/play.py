@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import app
 from context import postgres_session, entity_cache
-from config import logger, HOST_ENDPOINT
+from logger import logger
 from entities import game_host_action_entities, game_player_action_entities
 from repositories import (
     UserRepository,
@@ -28,6 +28,10 @@ from schemas.p2p import (
     game_host_action_response_schemas,
     game_host_action_for_player_response_schemas
 )
+from celery_app_tasks import complete_game_on_timeout, payout
+
+
+HOST_ENDPOINT = "http://{domain}/{path}"
 
 
 @app.api_route(
@@ -48,8 +52,6 @@ async def play(
         player_payload: BaseGamePlayerActionRequestSchema = Depends(get_player_action_schema),
         session: AsyncSession = Depends(get_session)
 ):
-    from tasks.payout import payout
-    from tasks.complete_game_on_timeout import complete_game_on_timeout
     # player part
     entity_cache.set({})
     postgres_session.set(session)

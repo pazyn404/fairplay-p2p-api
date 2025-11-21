@@ -1,6 +1,6 @@
 from base64 import b64encode
 
-from config import VerifyingKey
+from  keys import VerifyingKey
 from .base import BaseEntity
 
 
