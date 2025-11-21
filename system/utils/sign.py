@@ -1,6 +1,6 @@
 import json
 
-from config import SYSTEM_SIGNING_KEY
+from keys import SYSTEM_SIGNING_KEY
 
 
 def sign(data: dict[str, int | str | None]) -> bytes:

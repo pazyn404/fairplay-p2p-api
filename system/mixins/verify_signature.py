@@ -1,6 +1,6 @@
 import json
 
-from config import VerifyingKey
+from keys import VerifyingKey
 
 
 class VerifySignatureMixin:
