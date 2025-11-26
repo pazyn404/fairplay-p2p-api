@@ -5,6 +5,7 @@ import secrets
 from hashlib import sha256
 from base64 import b64encode, b64decode
 
+import requests
 from ecdsa import SigningKey
 
 
@@ -29,7 +30,11 @@ def get_seed_hash(seed: str) -> str:
 
 who = sys.argv[1]
 user_id = int(sys.argv[2])
-action_number = int(sys.argv[3])
+response = requests.get(f"http://127.0.0.1:8000/users/{user_id}")
+if response.status_code == 404:
+    raise Exception(f"User {user_id} not found")
+payload = response.json()
+action_number = payload["action_number"] + 1
 
 if who == "player":
     private_key_path = "../player/keys/player_private_key.der"
