@@ -111,12 +111,12 @@ host_user_actions = {
     "create_optimal_stopping_game": {
         "input": {
             ("bet", "should be grater than 0"): int,
-            ("duration", "should be between 11 and 299 inclusive"): int,
+            ("duration", "should be between 10 and 300 inclusive"): int,
             ("active", "should be 't' or 'f'(defines whether balance will be updated(withdraw money from balance if 't', leave balance unchanged if 'f'))"): bool,
-            ("numbers_count", "should be between 11 and 49 inclusive"): int,
-            ("mean", "should be between 1 and 999 inclusive"): int,
-            ("std", "should be between 101 and 999 inclusive"): int,
-            ("top", "should be between 2 and 49 inclusive"): int,
+            ("numbers_count", "should be between 10 and 50 inclusive"): int,
+            ("mean", "should be between 0 and 1000 inclusive"): int,
+            ("std", "should be between 100 and 1000 inclusive"): int,
+            ("top", "should be between 1 and 50 inclusive"): int,
         },
         "default": [
             ("id", None),
@@ -158,12 +158,12 @@ host_user_actions = {
         "input": {
             "id": int,
             ("bet", "should be grater than 0"): int,
-            ("duration", "should be between 11 and 299 inclusive"): int,
+            ("duration", "should be between 10 and 300 inclusive"): int,
             ("active", "set to 't' or 'f'(defines whether balance will be updated(t->f return money to balance, f->t withdraw money from balance))"): bool,
-            ("numbers_count", "should be between 11 and 49 inclusive"): int,
-            ("mean", "should be between 1 and 999 inclusive"): int,
-            ("std", "should be between 101 and 999 inclusive"): int,
-            ("top", "should be between 2 and 49 inclusive"): int,
+            ("numbers_count", "should be between 10 and 50 inclusive"): int,
+            ("mean", "should be between 0 and 1000 inclusive"): int,
+            ("std", "should be between 100 and 1000 inclusive"): int,
+            ("top", "should be between 1 and 50 inclusive"): int,
         },
         "default": [
             ("user_id", user_id),

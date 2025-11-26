@@ -6,8 +6,7 @@ from pydantic import BaseModel, Field, Base64Bytes, field_serializer
 class BaseCreateGameRequestSchema(BaseModel):
     user_id: int
     bet: Annotated[int, Field(gt=0)]
-    duration: Annotated[int, Field(gt=10, lt=300)]
-    active: bool
+    duration: Annotated[int, Field(gt=9, lt=301)]
     active: bool
     seed_hash: Base64Bytes
     user_signature: Base64Bytes

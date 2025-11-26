@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Base64Bytes, field_serializer
 
+
 class CreateHostRequestSchema(BaseModel):
     user_id: int
     domain: str
