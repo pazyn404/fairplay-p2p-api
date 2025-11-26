@@ -41,6 +41,12 @@ docker compose --env-file .\dev\.env up
 cd host
 docker compose --env-file .\dev\.env up
 ```
+* Run tests(both system and host must run), tests change db state(new entries are added)
+```
+cd ..
+pytest
+```
+
 * ## Linux, MacOS
 * Init
 ```
@@ -65,9 +71,20 @@ cd host
 docker compose --env-file ./dev/.env up
 ```
 
+* Run tests(both system and host must run), tests change db state(new entries are added)
+```
+cd ..
+pytest
+```
+
+# How to top up the balance
+
+To top up the balance use /faucet/{user_id} endpoint(send with an empty json payload).
+For host_user you must call it on both the host(/faucet/, without id) and system apps.
+
 # How to format payload
 
-* To format payload tools/payload_formatter.py should be used like:
-* python payload_formatter.py who(host_user, player) id next_action_number
-* python payload_formatter.py host_user 1 2
-* python payload_formatter.py player 2 0
+* To format payload tools/payload_formatter.py should be used:
+  * python payload_formatter.py who(host_user, player) id:
+    * python payload_formatter.py host_user 1
+    * python payload_formatter.py player 2
