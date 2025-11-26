@@ -3,7 +3,7 @@ import json
 from keys import VerifyingKey
 
 
-class VerifySignatureMixin:
+class VerifyUserSignatureMixin:
     def verify_user_signature(self) -> None:
         data = self.user_signature_data
         message = json.dumps(data, separators=(",", ":"))

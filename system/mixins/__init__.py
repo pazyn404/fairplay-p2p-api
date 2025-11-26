@@ -1,2 +1,2 @@
-from .verify_signature import VerifySignatureMixin
+from .verify_user_signature import VerifyUserSignatureMixin
 from .update_related_user_action_number import UpdateRelatedUserActionNumberMixin
