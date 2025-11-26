@@ -72,4 +72,4 @@ def update_game(game_name: str) -> tuple[dict, int]:
 
     db.session.commit()
 
-    return {}, 200
+    return {"id": game.id, "action_number": game.action_number}, 200

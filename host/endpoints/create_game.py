@@ -69,4 +69,4 @@ def create_game(game_name: str) -> tuple[dict, int]:
 
     db.session.commit()
 
-    return {}, 201
+    return {"id": game.id, "action_number": game.action_number}, 201
