@@ -1,9 +1,9 @@
 from exceptions import VerificationError
-from mixins import VerifySignatureMixin, UpdateRelatedUserActionNumberMixin
+from mixins import VerifyUserSignatureMixin, UpdateRelatedUserActionNumberMixin
 from .base import BaseEntity
 
 
-class Host(VerifySignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity):
+class Host(VerifyUserSignatureMixin, UpdateRelatedUserActionNumberMixin, BaseEntity):
     def __init__(
             self,
             *,

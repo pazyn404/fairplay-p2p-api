@@ -1,8 +1,8 @@
-from mixins import VerifySignatureMixin
+from mixins import VerifyUserSignatureMixin
 from ..base import BaseEntity
 
 
-class BaseGameAction(VerifySignatureMixin, BaseEntity):
+class BaseGameAction(VerifyUserSignatureMixin, BaseEntity):
     def __init__(
             self,
             *,
