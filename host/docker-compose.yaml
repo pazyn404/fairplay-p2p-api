@@ -13,7 +13,8 @@ services:
     volumes:
       - .:/app
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   celery:
     build:
@@ -33,6 +34,11 @@ services:
     container_name: host-postgres
     env_file:
       - dev/postgres.env
+    healthcheck:
+      test: /usr/bin/pg_isready -U postgres
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
