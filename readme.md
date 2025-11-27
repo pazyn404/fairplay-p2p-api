@@ -31,28 +31,28 @@ cd tools
 python init.py
 cd ..
 ```
-* Run system
+* ### Run system
 ```
 cd system
 docker compose --env-file .\dev\.env up
 ```
-* Run host
+* ### Run host
 ```
 cd host
 docker compose --env-file .\dev\.env up
 ```
-* Run tests(both system and host must run), tests change db state(new entries are added)
+* ### Run tests(both system and host must run), tests change db state
 ```
-cd ..
 pytest
 ```
 
 * ## Linux, MacOS
-* Init
+* ### Init
 ```
 git clone https://github.com/pazyn404/fairplay-p2p-api.git
+git checkout linux_support
 cd fairplay-p2p-api
-mkdir system/keys host/keys player/keys
+mkdir -p system/keys host/keys player/keys
 python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -r requirements.txt
@@ -60,20 +60,19 @@ cd tools
 python3 init.py
 cd ..
 ```
-* Run system
+* ### Run system
 ```
 cd system
 docker compose --env-file ./dev/.env up
 ```
-* Run host
+* ### Run host
 ```
 cd host
 docker compose --env-file ./dev/.env up
 ```
 
-* Run tests(both system and host must run), tests change db state(new entries are added)
+* ### Run tests(both system and host must run), tests change db state
 ```
-cd ..
 pytest
 ```
 
