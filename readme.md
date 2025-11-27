@@ -17,7 +17,7 @@ DAG structure that allows to crawl messages much easier and faster(should be tes
 # How to run
 
 * ## Windows
-* Init
+### Init
 ```
 git clone https://github.com/pazyn404/fairplay-p2p-api.git
 cd fairplay-p2p-api
@@ -31,27 +31,27 @@ cd tools
 python init.py
 cd ..
 ```
-* ### Run system
+### Run system
 ```
 cd system
 docker compose --env-file .\dev\.env up
 ```
-* ### Run host
+### Run host
 ```
 cd host
 docker compose --env-file .\dev\.env up
 ```
-* ### Run tests(both system and host must run), tests change db state
+### Run tests(both system and host must run), tests change db state
 ```
 pytest
 ```
 
 * ## Linux, MacOS
-* ### Init
+### Init
 ```
 git clone https://github.com/pazyn404/fairplay-p2p-api.git
-git checkout linux_support
 cd fairplay-p2p-api
+git checkout linux_support
 mkdir -p system/keys host/keys player/keys
 python3 -m venv venv
 source venv/bin/activate
@@ -60,18 +60,18 @@ cd tools
 python3 init.py
 cd ..
 ```
-* ### Run system
+### Run system
 ```
 cd system
 docker compose --env-file ./dev/.env up
 ```
-* ### Run host
+### Run host
 ```
 cd host
 docker compose --env-file ./dev/.env up
 ```
 
-* ### Run tests(both system and host must run), tests change db state
+### Run tests(both system and host must run), tests change db state
 ```
 pytest
 ```
