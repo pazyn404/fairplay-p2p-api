@@ -54,10 +54,12 @@ def play(game_name: str) -> tuple[dict, int]:
 
     if system_action.is_last_action():
         game.complete()
+
+        db.session.commit()
+
         if game.win:
             payout.delay(game_name, game.id)
 
-        db.session.commit()
         return game.revealed_data, 200
     else:
         db.session.commit()
