@@ -92,11 +92,12 @@ async def play(
         logger.critical(errors, extra={"player_payload": player_payload, "host_payload": host_payload})
 
         game.winner_id = player_action.user_id
-        payout.delay(game_name, game.id)
 
         await game_repository.fetch_related(game)
         await game_repository.save(game)
         await session.commit()
+
+        payout.delay(game_name, game.id)
 
     async with httpx.AsyncClient() as client:
         try:
@@ -131,10 +132,10 @@ async def play(
 
         game.complete()
 
-        payout.delay(game_name, game.id)
-
         await game_repository.save(game)
         await session.commit()
+
+        payout.delay(game_name, game.id)
 
         return game_response_schema.model_validate(game)
     else:
