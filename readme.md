@@ -51,7 +51,6 @@ pytest
 ```
 git clone https://github.com/pazyn404/fairplay-p2p-api.git
 cd fairplay-p2p-api
-git checkout linux_support
 mkdir -p system/keys host/keys player/keys
 python3 -m venv venv
 source venv/bin/activate
@@ -62,11 +61,13 @@ cd ..
 ```
 ### Run system
 ```
+git checkout linux_support
 cd system
 docker compose --env-file ./dev/.env up
 ```
 ### Run host
 ```
+git checkout linux_support
 cd host
 docker compose --env-file ./dev/.env up
 ```
